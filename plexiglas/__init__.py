@@ -140,7 +140,10 @@ def init_logging(opts):
 
     log.addHandler(lh)
 
-    log_format = '[%(asctime)s] [%(levelname)s] [%(name)s] [%(module)s:%(lineno)d] %(message)s'
+    if opts.debug or opts.verbose:
+        log_format = '[%(asctime)s] [%(levelname)s] [%(name)s] [%(module)s:%(lineno)d] %(message)s'
+    else:
+        log_format = '[%(asctime)s] [%(levelname)s] [%(name)s] %(message)s'
 
     lh.setFormatter(logging.Formatter(log_format,
                                       datefmt='%d/%m/%Y %H:%M:%S'))
