@@ -249,15 +249,17 @@ def main():
                         log.info('Downloading %s to %s', filename, savepath)
                         os.makedirs(savepath, exist_ok=True)
 
+                        path = os.path.join(savepath, filename)
                         try:
-                            utils.download(url, token=plex.authenticationToken, filename=filename, savepath=savepath,
-                                           session=media._server._session, showstatus=True)
+                            if not os.path.isfile(path) or os.path.getsize(path) != part.size:
+                                utils.download(url, token=plex.authenticationToken, filename=filename,
+                                               savepath=savepath, session=media._server._session, showstatus=True)
                             db.mark_downloaded(item, media, part.size, filename)
                             item.markDownloaded(media)
                             disk_used += part.size
                         except:
-                            if os.path.isfile(os.path.join(savepath, filename)):
-                                os.unlink(os.path.join(savepath, filename))
+                            if os.path.isfile(path) and os.path.getsize(path) != part.size:
+                                os.unlink(path)
                             raise
 
                         break
