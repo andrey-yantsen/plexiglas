@@ -218,7 +218,7 @@ def main():
             disk_used = db.get_downloaded_size()
 
             all_downloaded_items = db.get_all_downloaded()
-            downloaded_count = defaultdict(dict)
+            downloaded_count = defaultdict(lambda: defaultdict(int))
 
             for (machine_id, sync_id), items in groupby(all_downloaded_items, key=itemgetter(1, 2)):
                 downloaded_count[machine_id][sync_id] = len(list(items))
