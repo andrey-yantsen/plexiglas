@@ -7,6 +7,8 @@ from itertools import groupby
 from operator import itemgetter
 from time import sleep
 
+from requests import ReadTimeout
+
 from . import db
 
 log = logging.getLogger('plexiglas')
@@ -209,85 +211,92 @@ def main():
     while not stop:
         stop = not opts.loop
 
-        sync_items = plex.syncItems().items
-        required_media = []
-        sync_list_without_changes = []
-        disk_used = db.get_downloaded_size()
+        try:
+            sync_items = plex.syncItems().items
+            required_media = []
+            sync_list_without_changes = []
+            disk_used = db.get_downloaded_size()
 
-        all_downloaded_items = db.get_all_downloaded()
-        downloaded_count = defaultdict(dict)
+            all_downloaded_items = db.get_all_downloaded()
+            downloaded_count = defaultdict(dict)
 
-        for (machine_id, sync_id), items in groupby(all_downloaded_items, key=itemgetter(1, 2)):
-            downloaded_count[machine_id][sync_id] = len(list(items))
+            for (machine_id, sync_id), items in groupby(all_downloaded_items, key=itemgetter(1, 2)):
+                downloaded_count[machine_id][sync_id] = len(list(items))
 
-        for item in sync_items:
-            log.debug('Checking sync item#%d %s', item.id, item.title)
+            for item in sync_items:
+                log.debug('Checking sync item#%d %s', item.id, item.title)
 
-            if item.status.itemsReadyCount == 0\
-                    and item.status.itemsDownloadedCount == downloaded_count[item.machineIdentifier][item.id]:
-                sync_list_without_changes.append((item.machineIdentifier, item.id))
-                log.debug('No changes for the item %s', item.status)
-                continue
+                if item.status.itemsReadyCount == 0\
+                        and item.status.itemsDownloadedCount == downloaded_count[item.machineIdentifier][item.id]:
+                    sync_list_without_changes.append((item.machineIdentifier, item.id))
+                    log.debug('No changes for the item %s', item.status)
+                    continue
 
-            for media in item.getMedia(timeout=max(item.status.itemsCount * 3, 15)):
-                log.debug('Checking media#%d %s', media.ratingKey, media.title)
-                required_media.append((item.machineIdentifier, item.id, media.ratingKey))
-                for part in media.iterParts():
-                    if part.syncItemId == item.id and part.syncState == 'processed':
-                        filename = pretty_filename(media, part)
+                for media in item.getMedia(timeout=max(item.status.itemsCount * 3, 15)):
+                    log.debug('Checking media#%d %s', media.ratingKey, media.title)
+                    required_media.append((item.machineIdentifier, item.id, media.ratingKey))
+                    for part in media.iterParts():
+                        if part.syncItemId == item.id and part.syncState == 'processed':
+                            filename = pretty_filename(media, part)
 
-                        if opts.limit_disk_usage and disk_used + part.size > opts.limit_disk_usage:
-                            log.debug('Not downloading %s from %s, size limit would be exceeded', filename, item.title)
-                            continue
+                            if opts.limit_disk_usage and disk_used + part.size > opts.limit_disk_usage:
+                                log.debug('Not downloading %s from %s, size limit would be exceeded', filename, item.title)
+                                continue
 
-                        if get_available_disk_space(opts.destination) < part.size:
-                            log.debug('Not downloading %s from %s, due to low available space', filename, item.title)
-                            continue
+                            if get_available_disk_space(opts.destination) < part.size:
+                                log.debug('Not downloading %s from %s, due to low available space', filename, item.title)
+                                continue
 
-                        savepath = os.path.join(opts.destination, item.title)
-                        url = part._server.url(part.key)
-                        log.info('Downloading %s to %s', filename, savepath)
-                        os.makedirs(savepath, exist_ok=True)
+                            savepath = os.path.join(opts.destination, item.title)
+                            url = part._server.url(part.key)
+                            log.info('Downloading %s to %s', filename, savepath)
+                            os.makedirs(savepath, exist_ok=True)
 
-                        path = os.path.join(savepath, filename)
-                        try:
-                            if not os.path.isfile(path) or os.path.getsize(path) != part.size:
-                                utils.download(url, token=plex.authenticationToken, filename=filename,
-                                               savepath=savepath, session=media._server._session, showstatus=True)
-                            db.mark_downloaded(item, media, part.size, filename)
-                            item.markDownloaded(media)
-                            disk_used += part.size
-                        except:
-                            if os.path.isfile(path) and os.path.getsize(path) != part.size:
-                                os.unlink(path)
-                            raise
+                            path = os.path.join(savepath, filename)
+                            try:
+                                if not os.path.isfile(path) or os.path.getsize(path) != part.size:
+                                    utils.download(url, token=plex.authenticationToken, filename=filename,
+                                                   savepath=savepath, session=media._server._session, showstatus=True)
+                                db.mark_downloaded(item, media, part.size, filename)
+                                item.markDownloaded(media)
+                                disk_used += part.size
+                            except:
+                                if os.path.isfile(path) and os.path.getsize(path) != part.size:
+                                    os.unlink(path)
+                                raise
 
-                        break
+                            break
 
-        for (db_item_id, machine_id, sync_id, media_id, sync_title, media_filename) in db.get_all_downloaded():
-            media_path = os.path.join(opts.destination, sync_title, media_filename)
-            if (machine_id, sync_id, media_id) in required_media or (machine_id, sync_id) in sync_list_without_changes:
-                if not os.path.isfile(media_path):
-                    if opts.mark_watched:
-                        conn = None
-                        for res in plex.resources():
-                            if res.clientIdentifier == machine_id:
-                                conn = res.connect()
-                                break
+            for (db_item_id, machine_id, sync_id, media_id, sync_title, media_filename) in db.get_all_downloaded():
+                media_path = os.path.join(opts.destination, sync_title, media_filename)
+                if (machine_id, sync_id, media_id) in required_media or (machine_id, sync_id) in sync_list_without_changes:
+                    if not os.path.isfile(media_path):
+                        if opts.mark_watched:
+                            conn = None
+                            for res in plex.resources():
+                                if res.clientIdentifier == machine_id:
+                                    conn = res.connect()
+                                    break
 
-                        if conn:
-                            key = '/:/scrobble?key=%s&identifier=com.plexapp.plugins.library' % media_id
-                            conn.query(key)
-                            log.info('File %s not found, marking media as watched', media_path)
+                            if conn:
+                                key = '/:/scrobble?key=%s&identifier=com.plexapp.plugins.library' % media_id
+                                conn.query(key)
+                                log.info('File %s not found, marking media as watched', media_path)
+                                db.remove_downloaded(db_item_id)
+                        else:
+                            log.error('File not found %s, removing it from the DB', media_path)
                             db.remove_downloaded(db_item_id)
-                    else:
-                        log.error('File not found %s, removing it from the DB', media_path)
-                        db.remove_downloaded(db_item_id)
+                else:
+                    log.info('File is not required anymore %s', media_path)
+                    if os.path.isfile(media_path):
+                        os.unlink(media_path)
+                    db.remove_downloaded(db_item_id)
+        except ReadTimeout:
+            if stop:
+                raise
             else:
-                log.info('File is not required anymore %s', media_path)
-                if os.path.isfile(media_path):
-                    os.unlink(media_path)
-                db.remove_downloaded(db_item_id)
+                log.info('Oops, I`ve got a ReadTimeout, let`s try again')
+                plex = get_plex_client(opts)
 
         if not stop:
             log.debug('Going to sleep')
