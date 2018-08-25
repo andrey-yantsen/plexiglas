@@ -211,6 +211,14 @@ def main():
     while not stop:
         stop = not opts.loop
 
+        if not os.path.isdir(opts.destination):
+            if stop:
+                log.error('Destination directory does not exists')
+                exit(1)
+            log.debug('Destination directory is not found, probably external storage was disconnected, going to sleep')
+            sleep(int(opts.delay))
+            continue
+
         try:
             sync_items = plex.syncItems().items
             required_media = []
