@@ -113,6 +113,8 @@ def get_plex_client(opts):
 
     plexapi.X_PLEX_ENABLE_FAST_CONNECT = True
 
+    plexapi.TIMEOUT = 120
+
     plex = None
 
     log.info('Logging to myplex with username %s', opts.username)
@@ -248,7 +250,7 @@ def main():
                     log.debug('No changes for the item %s', item.status)
                     continue
 
-                for media in item.getMedia(timeout=max(item.status.itemsCount * 3, 15)):
+                for media in item.getMedia():
                     log.debug('Checking media#%d %s', media.ratingKey, media.title)
                     required_media.append((item.machineIdentifier, item.id, media.ratingKey))
                     for part in media.iterParts():
