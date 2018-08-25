@@ -6,7 +6,7 @@ from collections import defaultdict
 from itertools import groupby
 from operator import itemgetter
 from time import sleep
-
+import humanfriendly as hf
 from requests import ReadTimeout
 
 from . import db
@@ -16,7 +16,6 @@ log = logging.getLogger('plexiglas')
 
 def process_opts(opts):
     import keyring
-    import humanfriendly as hf
 
     init_logging(opts)
 
@@ -205,7 +204,10 @@ def main():
     opts = parser.parse_args()
 
     process_opts(opts)
+
     plex = get_plex_client(opts)
+
+    last_reported_du = 0
 
     stop = False
     while not stop:
@@ -218,6 +220,12 @@ def main():
             log.debug('Destination directory is not found, probably external storage was disconnected, going to sleep')
             sleep(int(opts.delay))
             continue
+
+        disk_used = db.get_downloaded_size()
+        disk_used_hf = hf.format_size(disk_used, binary=True)
+        if disk_used > 0 and disk_used_hf != last_reported_du:
+            last_reported_du = disk_used_hf
+            log.info('Currently used (according to DB): %s', disk_used_hf)
 
         try:
             sync_items = plex.syncItems().items
