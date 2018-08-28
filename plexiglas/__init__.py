@@ -173,7 +173,7 @@ def main():
             plex = get_plex_client(opts)
             required_media, sync_list_without_changes = plexsync.sync(plex, opts.destination, opts.limit_disk_usage,
                                                                       opts.resume_downloads)
-            cleanup(opts.destination_path, opts.mark_watched, required_media, sync_list_without_changes, plex)
+            cleanup(opts.destination, opts.mark_watched, required_media, sync_list_without_changes, plex)
         except ReadTimeout:
             if stop:
                 raise
