@@ -67,3 +67,75 @@ def makedirs(name, mode=0o777, exist_ok=False):
     except OSError:
         if not os.path.isdir(name) or not exist_ok:
             raise
+
+
+def download(url, token, session, filename, savepath=None, chunksize=4024,
+             showstatus=False):
+    """ Helper to download a thumb, videofile or other media item. Returns the local
+        path to the downloaded file.
+
+        Copied from plexapi.utils.download
+
+        Parameters:
+            url (str): URL where the content be reached.
+            token (str): Plex auth token to include in headers.
+            savepath (str): Defaults to current working dir.
+            chunksize (int): What chunksize read/write at the time.
+            showstatus(bool): Display a progressbar.
+
+        Example:
+            >>> download(a_episode.getStreamURL(), a_episode.location)
+            /path/to/file
+    """
+
+    from . import log
+    from requests import codes
+
+    # make sure the savepath directory exists
+    savepath = savepath or os.getcwd()
+    makedirs(savepath, exist_ok=True)
+    filename = os.path.basename(filename)
+    fullpath = os.path.join(savepath, filename)
+
+    # fetch the data to be saved
+    headers = {'X-Plex-Token': token}
+
+    if os.path.isfile(fullpath):
+        headers['Range'] = 'bytes=%d-' % os.path.getsize(fullpath)
+
+    response = session.get(url, headers=headers, stream=True)
+
+    # append file.ext from content-type if not already there
+    extension = os.path.splitext(fullpath)[-1]
+    if not extension:
+        contenttype = response.headers.get('content-type')
+        if contenttype and 'image' in contenttype:
+            fullpath += contenttype.split('/')[1]
+
+    if headers.get('Range') and response.status_code == codes.partial_content:
+        file_mode = 'ab'
+    else:
+        file_mode = 'wb'
+
+    # save the file to disk
+    if showstatus:  # pragma: no cover
+        from tqdm import tqdm
+        total = int(response.headers.get('content-length', 0))
+        initial = 0
+
+        if headers.get('Range') and response.status_code == codes.partial_content:
+            initial = os.path.getsize(fullpath)
+            total += initial
+
+        bar = tqdm(unit='B', unit_scale=True, total=total, desc=filename, initial=initial)
+
+    with open(fullpath, file_mode) as handle:
+        for chunk in response.iter_content(chunk_size=chunksize):
+            handle.write(chunk)
+            if showstatus:
+                bar.update(len(chunk))
+
+    if showstatus:  # pragma: no cover
+        bar.close()
+
+    return fullpath

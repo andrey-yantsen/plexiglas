@@ -134,6 +134,8 @@ def parse_arguments():
                         default=60)
     parser.add_argument('-n', '--device-name', help='Device name for the Plex client instance to be displayed in '
                                                     'devices list (default "%(default)s")', default=uname()[1])
+    parser.add_argument('-r', '--resume-downloads', help='Allow to resume downloads (the result file may be broken)',
+                        action='store_const', const=True, default=False)
 
     return parser.parse_args()
 
@@ -169,7 +171,8 @@ def main():
 
         try:
             plex = get_plex_client(opts)
-            required_media, sync_list_without_changes = plexsync.sync(plex, opts.destination, opts.limit_disk_usage)
+            required_media, sync_list_without_changes = plexsync.sync(plex, opts.destination, opts.limit_disk_usage,
+                                                                      opts.resume_downloads)
             cleanup(opts.destination_path, opts.mark_watched, required_media, sync_list_without_changes, plex)
         except ReadTimeout:
             if stop:

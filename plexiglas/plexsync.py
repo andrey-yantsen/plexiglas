@@ -14,12 +14,12 @@ def get_download_part(media, sync_item):
             return part
 
 
-def download_media(part, media, sync_item, path, plex):
-    from plexapi import utils
-    from .content import makedirs
+def download_media(plex, sync_item, media, part, path, resume_downloads):
+    from .content import makedirs, download
 
     log.debug('Checking media#%d %s', media.ratingKey, media.title)
     filename = pretty_filename(media, part)
+    filename_tmp = filename + '.part'
 
     savepath = os.path.join(path, sync_item.title)
     url = part._server.url(part.key)
@@ -27,19 +27,27 @@ def download_media(part, media, sync_item, path, plex):
     makedirs(savepath, exist_ok=True)
 
     path = os.path.join(savepath, filename)
-    try:
-        if not os.path.isfile(path) or os.path.getsize(path) != part.size:
-            utils.download(url, token=plex.authenticationToken, filename=filename,
-                           savepath=savepath, session=media._server._session, showstatus=True)
-        db.mark_downloaded(sync_item, media, part.size, filename)
-        sync_item.markDownloaded(media)
-    except:
-        if os.path.isfile(path) and os.path.getsize(path) != part.size:
-            os.unlink(path)
-        raise
+    path_tmp = os.path.join(savepath, filename_tmp)
+
+    if not resume_downloads and os.path.isfile(path_tmp) and os.path.getsize(path) != part.size:
+        os.unlink(path_tmp)
+
+    if not os.path.isfile(path_tmp) or os.path.getsize(path_tmp) != part.size:
+        try:
+            download(url, token=plex.authenticationToken, session=media._server._session, filename=filename_tmp,
+                     savepath=savepath, showstatus=True)
+        except:
+            if os.path.isfile(path_tmp) and os.path.getsize(path_tmp) != part.size and not resume_downloads:
+                os.unlink(path_tmp)
+            raise
+
+    db.mark_downloaded(sync_item, media, part.size, filename)
+    sync_item.markDownloaded(media)
+
+    os.rename(path_tmp, path)
 
 
-def sync(plex, destination, limit_disk_usage):
+def sync(plex, destination, limit_disk_usage, resume_downloads):
     sync_items = plex.syncItems().items
     required_media = []
     sync_list_without_changes = []
@@ -78,6 +86,6 @@ def sync(plex, destination, limit_disk_usage):
                     log.debug('Not downloading %s from %s, due to low available space', media.title, item.title)
                     continue
 
-                download_media(part, media, item, destination, plex)
+                download_media(plex, item, media, part, destination, resume_downloads)
 
     return required_media, sync_list_without_changes
