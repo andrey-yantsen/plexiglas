@@ -131,6 +131,8 @@ def parse_arguments():
                         action='store_const', const=True)
     parser.add_argument('--delay', help='Delay in seconds between iterations (only with --loop, default %(default)d)',
                         default=60)
+    parser.add_argument('-n', '--device-name', help='Device name for the Plex client instance to be displayed in '
+                                                    'devices list (default "%(default)s")', default=uname()[1])
 
     return parser.parse_args()
 

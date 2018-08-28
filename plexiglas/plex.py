@@ -23,7 +23,7 @@ def init_sync_target():
     plexapi.BASE_HEADERS['X-Plex-Vendor'] = 'Apple'
 
 
-def init_plexapi():
+def init_plexapi(device_name):
     global PLEXAPI_INITIALIZED
 
     if PLEXAPI_INITIALIZED is True:
@@ -33,6 +33,9 @@ def init_plexapi():
 
     plexapi.X_PLEX_IDENTIFIER = db.get_client_uuid()
     plexapi.BASE_HEADERS['X-Plex-Client-Identifier'] = plexapi.X_PLEX_IDENTIFIER
+
+    plexapi.X_PLEX_DEVICE_NAME = device_name
+    plexapi.BASE_HEADERS['X-Plex-Device-Name'] = plexapi.X_PLEX_DEVICE_NAME
 
     plexapi.X_PLEX_PRODUCT = 'plexiglas'
     plexapi.BASE_HEADERS['X-Plex-Product'] = plexapi.X_PLEX_PRODUCT
@@ -48,7 +51,7 @@ def init_plexapi():
 def get_plex_client(opts):
     import keyring
 
-    init_plexapi()
+    init_plexapi(opts.device_name)
 
     plex = None
 
