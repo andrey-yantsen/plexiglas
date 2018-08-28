@@ -6,6 +6,9 @@ from plexapi.base import Playable
 from plexapi.sync import SyncItem
 
 
+CURRENT_VERSION = 1
+
+
 @contextmanager
 def _get_db():
     conn = sqlite3.connect('.plexiglas.db', detect_types=sqlite3.PARSE_DECLTYPES | sqlite3.PARSE_COLNAMES)
@@ -18,36 +21,57 @@ def _get_db():
 
 
 def _init_db(conn):
-    conn.executescript("""
-    CREATE TABLE IF NOT EXISTS settings (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name VARCHAR(255) NOT NULL,
-        value VARCHAR(255) NOT NULL
-    );
-    CREATE UNIQUE INDEX IF NOT EXISTS uidx_settings_name ON settings(name);
+    cur = conn.cursor()
+    cur.execute('PRAGMA user_version')
+    db_version = int(cur.fetchone()[0])
 
-    CREATE TABLE IF NOT EXISTS items (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        sync_id INTEGER NOT NULL,
-        media_id INTEGER NOT NULL,
-        title varchar(255) not null,
-        downloaded tinyint(1) not null default 0,
-        filename varchar(255) not null,
-        filesize integer not null default 0
-    );
-    CREATE UNIQUE INDEX IF NOT EXISTS uidx_items_sync_id_media_id ON items(sync_id, media_id);
-    CREATE INDEX IF NOT EXISTS idx_items_sync_id ON items(sync_id);
-    CREATE INDEX IF NOT EXISTS idx_items_downloaded ON items(downloaded);
+    init_required = False
 
-    CREATE TABLE IF NOT EXISTS syncs (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        machine_id varchar(255) not null,
-        sync_id INTEGER NOT NULL,
-        title varchar(255) not null,
-        version integer not null default 1
-    );
-    CREATE UNIQUE INDEX IF NOT EXISTS uidx_syncs_machine_id_media_id ON syncs(machine_id, sync_id);
-    """)
+    if db_version == 0:
+        cur.execute('PRAGMA schema_version')
+        schema_version = int(cur.fetchone()[0])
+        if schema_version == 0:
+            init_required = True
+
+    if init_required:
+        conn.executescript("""
+            CREATE TABLE IF NOT EXISTS settings (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name VARCHAR(255) NOT NULL,
+                value VARCHAR(255) NOT NULL
+            );
+            CREATE UNIQUE INDEX IF NOT EXISTS uidx_settings_name ON settings(name);
+
+            CREATE TABLE IF NOT EXISTS items (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                sync_id INTEGER NOT NULL,
+                media_id INTEGER NOT NULL,
+                title varchar(255) not null,
+                downloaded tinyint(1) not null default 0,
+                filename varchar(255) not null,
+                filesize integer not null default 0,
+                media_type VARCHAR(50) not null
+            );
+            CREATE UNIQUE INDEX IF NOT EXISTS uidx_items_sync_id_media_id ON items(sync_id, media_id);
+            CREATE INDEX IF NOT EXISTS idx_items_sync_id ON items(sync_id);
+            CREATE INDEX IF NOT EXISTS idx_items_downloaded ON items(downloaded);
+
+            CREATE TABLE IF NOT EXISTS syncs (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                machine_id varchar(255) not null,
+                sync_id INTEGER NOT NULL,
+                title varchar(255) not null,
+                version integer not null default 1
+            );
+            CREATE UNIQUE INDEX IF NOT EXISTS uidx_syncs_machine_id_media_id ON syncs(machine_id, sync_id);
+        """)
+
+    if db_version == 0:
+        conn.execute('ALTER TABLE items ADD COLUMN media_type VARCHAR(50)')
+
+    if db_version != CURRENT_VERSION:
+        cur.execute('PRAGMA user_version = ' + str(int(CURRENT_VERSION)))
+
     conn.commit()
 
 
@@ -83,20 +107,18 @@ def mark_downloaded(item: SyncItem, media: Playable, filesize: int, filename=Non
         cur.execute('SELECT id FROM items WHERE sync_id = ? and media_id = ?', (sync_id, media.ratingKey))
         item_id = cur.fetchone()[0]
 
-        cur.execute('UPDATE items SET downloaded = 1, title = ?, filename = ?, filesize = ? WHERE id = ?',
-                    (media.title, filename, filesize, item_id))
+        cur.execute('UPDATE items SET downloaded = 1, title = ?, filename = ?, filesize = ?, media_type = ? '
+                    'WHERE id = ?',
+                    (media.title, filename, filesize, media.TYPE, item_id))
 
         conn.commit()
 
 
-def remove_downloaded(item_id: int=None, machine_id: str=None, sync_id: int=None, media_id: int=None):
+def remove_downloaded(machine_id: str=None, sync_id: int=None, media_id: int=None):
     with _get_db() as conn:
-        if item_id:
-            conn.execute('DELETE FROM items WHERE id = ?', (item_id, ))
-        else:
-            conn.execute('DELETE FROM items WHERE media_id = ? AND '
-                         'sync_id = (SELECT id FROM syncs WHERE machine_id = ? AND sync_id = ?)', (media_id, machine_id,
-                                                                                                   sync_id))
+        conn.execute('DELETE FROM items WHERE media_id = ? AND '
+                     'sync_id = (SELECT id FROM syncs WHERE machine_id = ? AND sync_id = ?)', (media_id, machine_id,
+                                                                                               sync_id))
         conn.commit()
 
 
