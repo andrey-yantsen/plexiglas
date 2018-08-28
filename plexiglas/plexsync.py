@@ -57,7 +57,7 @@ def sync(plex, destination, limit_disk_usage):
         if item.status.itemsReadyCount == 0 \
                 and item.status.itemsDownloadedCount == downloaded_count[item.machineIdentifier][item.id]:
             sync_list_without_changes.append((item.machineIdentifier, item.id))
-            log.debug('No changes for the item#d %s', item.id, item.status)
+            log.debug('No changes for the item#%d %s', item.id, item.status)
             continue
 
         if limit_disk_usage and disk_used > limit_disk_usage:
