@@ -16,6 +16,7 @@ def get_download_part(media, sync_item):
 
 def download_media(part, media, sync_item, path, plex):
     from plexapi import utils
+    from .content import makedirs
 
     log.debug('Checking media#%d %s', media.ratingKey, media.title)
     filename = pretty_filename(media, part)
@@ -23,7 +24,7 @@ def download_media(part, media, sync_item, path, plex):
     savepath = os.path.join(path, sync_item.title)
     url = part._server.url(part.key)
     log.info('Downloading %s to %s', filename, savepath)
-    os.makedirs(savepath, exist_ok=True)
+    makedirs(savepath, exist_ok=True)
 
     path = os.path.join(savepath, filename)
     try:

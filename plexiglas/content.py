@@ -58,3 +58,12 @@ def get_total_disk_space(path):
 def get_available_disk_space(path):
     fs_stat = os.statvfs(path)
     return fs_stat.f_bfree * fs_stat.f_frsize
+
+
+def makedirs(name, mode=0o777, exist_ok=False):
+    """ Mimicks os.makedirs() from Python 3. """
+    try:
+        os.makedirs(name, mode)
+    except OSError:
+        if not os.path.isdir(name) or not exist_ok:
+            raise

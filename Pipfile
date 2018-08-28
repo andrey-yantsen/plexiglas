@@ -11,6 +11,3 @@ plexapi = {editable = true, ref = "sync", git = "https://github.com/andrey-yants
 humanfriendly = "*"
 
 [dev-packages]
-
-[requires]
-python_version = "3.7"

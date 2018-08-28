@@ -17,6 +17,7 @@ log = logging.getLogger('plexiglas')
 
 def process_opts(opts):
     import keyring
+    from .content import makedirs
 
     init_logging(opts)
 
@@ -53,7 +54,7 @@ def process_opts(opts):
 
     if not os.access(opts.destination, os.W_OK):
         try:
-            os.makedirs(opts.destination, exist_ok=True)
+            makedirs(opts.destination, exist_ok=True)
         except OSError:
             print('Directory "%s" should be writable' % opts.destination)
             exit(1)

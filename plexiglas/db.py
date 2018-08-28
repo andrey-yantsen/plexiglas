@@ -91,7 +91,18 @@ def get_client_uuid():
         return uuid
 
 
-def mark_downloaded(item: SyncItem, media: Playable, filesize: int, filename=None):
+def mark_downloaded(item, media, filesize, filename=None):
+    """
+
+    :param item:
+    :type item: plexapi.sync.SyncItem
+    :param media:
+    :type media: plexapi.base.Playable
+    :param filesize:
+    :type filesize: int
+    :param filename:
+    :return:
+    """
     with _get_db() as conn:
         cur = conn.cursor()
         cur.execute('INSERT OR IGNORE INTO syncs (machine_id, sync_id, title) VALUES (?, ?, ?)',
@@ -114,7 +125,17 @@ def mark_downloaded(item: SyncItem, media: Playable, filesize: int, filename=Non
         conn.commit()
 
 
-def remove_downloaded(machine_id: str=None, sync_id: int=None, media_id: int=None):
+def remove_downloaded(machine_id, sync_id, media_id):
+    """
+
+    :param machine_id:
+    :type machine_id: str
+    :param sync_id:
+    :type sync_id: int
+    :param media_id:
+    :type media_id: int
+    :return:
+    """
     with _get_db() as conn:
         conn.execute('DELETE FROM items WHERE media_id = ? AND '
                      'sync_id = (SELECT id FROM syncs WHERE machine_id = ? AND sync_id = ?)', (media_id, machine_id,
