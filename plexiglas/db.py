@@ -2,9 +2,6 @@ import sqlite3
 from contextlib import contextmanager
 from uuid import uuid4
 
-from plexapi.base import Playable
-from plexapi.sync import SyncItem
-
 
 CURRENT_VERSION = 1
 

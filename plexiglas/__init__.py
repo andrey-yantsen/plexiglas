@@ -12,11 +12,16 @@ from time import sleep
 import humanfriendly as hf
 from requests import ReadTimeout
 
+try:
+    import keyring
+except ImportError:
+    import keyring_stub as keyring
+
+
 log = logging.getLogger('plexiglas')
 
 
 def process_opts(opts):
-    import keyring
     from .content import makedirs
 
     init_logging(opts)

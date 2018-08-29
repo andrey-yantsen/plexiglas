@@ -49,7 +49,7 @@ def init_plexapi(device_name):
 
 
 def get_plex_client(opts):
-    import keyring
+    from . import keyring
 
     init_plexapi(opts.device_name)
 
