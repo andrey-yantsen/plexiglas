@@ -63,7 +63,7 @@ def _init_db(conn):
             CREATE UNIQUE INDEX IF NOT EXISTS uidx_syncs_machine_id_media_id ON syncs(machine_id, sync_id);
         """)
 
-    if db_version == 0:
+    if db_version == 0 and not init_required:
         conn.execute('ALTER TABLE items ADD COLUMN media_type VARCHAR(50)')
 
     if db_version != CURRENT_VERSION:
