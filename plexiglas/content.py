@@ -90,6 +90,7 @@ def download(url, token, session, filename, savepath=None, chunksize=4024,
     """
 
     from requests import codes
+    from plexapi import TIMEOUT
 
     # make sure the savepath directory exists
     savepath = savepath or os.getcwd()
@@ -103,7 +104,7 @@ def download(url, token, session, filename, savepath=None, chunksize=4024,
     if os.path.isfile(fullpath):
         headers['Range'] = 'bytes=%d-' % os.path.getsize(fullpath)
 
-    response = session.get(url, headers=headers, stream=True)
+    response = session.get(url, headers=headers, stream=True, timeout=TIMEOUT)
 
     # append file.ext from content-type if not already there
     extension = os.path.splitext(fullpath)[-1]

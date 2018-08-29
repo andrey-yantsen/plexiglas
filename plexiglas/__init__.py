@@ -164,6 +164,7 @@ def main():
     from .content import cleanup, get_available_disk_space
     from . import plexsync
     from . import db
+    from requests import exceptions
 
     opts = parse_arguments()
     process_opts(opts)
@@ -193,11 +194,11 @@ def main():
             required_media, sync_list_without_changes = plexsync.sync(plex, opts.destination, opts.limit_disk_usage,
                                                                       opts.resume_downloads, opts.rate_limit)
             cleanup(opts.destination, opts.mark_watched, required_media, sync_list_without_changes, plex)
-        except ReadTimeout:
+        except exceptions.RequestException:
             if stop:
                 raise
             else:
-                pass
+                log.exception('Got exception from RequestException family, it shouldn`t be anything serious')
 
         if not stop:
             log.debug('Going to sleep for %d seconds', opts.delay)
