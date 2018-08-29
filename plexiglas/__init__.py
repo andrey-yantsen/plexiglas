@@ -10,12 +10,13 @@ import logging
 import sys
 from time import sleep
 import humanfriendly as hf
-from requests import ReadTimeout
 
 try:
     import keyring
+    from keyring.core import set_keyring
 except ImportError:
     import keyring_stub as keyring
+    set_keyring = lambda x: None
 
 
 log = logging.getLogger('plexiglas')
@@ -26,6 +27,10 @@ def process_opts(opts):
 
     init_logging(opts)
 
+    if opts.insecure:
+        from keyrings.cryptfile.file import PlaintextKeyring
+        set_keyring(PlaintextKeyring())
+
     if opts.username:
         log.debug('Username provided, updating in keyring')
         keyring.set_password('plexiglas', 'myplex_login', opts.username)
@@ -34,6 +39,7 @@ def process_opts(opts):
         opts.username = keyring.get_password('plexiglas', 'myplex_login')
 
         if not opts.username:
+            from six.moves import input
             log.debug('No username in keyring')
             opts.username = input('Please provide MyPlex login: ').strip()
 
@@ -145,6 +151,10 @@ def parse_arguments():
     parser.add_argument('-r', '--resume-downloads', help='Allow to resume downloads (the result file may be broken)',
                         action='store_const', const=True, default=False)
     parser.add_argument('--rate-limit', help='Limit bandwidth usage per second (e.g. 1M, 100K)')
+    parser.add_argument('-i', '--insecure', help='Store your password with minimal encryption, without requiring'
+                                                 'additional password (useful when running headless on some strange '
+                                                 'devices like WD My Passport Wireless Pro)',
+                        default=False, action='store_const', const=True)
 
     return parser.parse_args()
 

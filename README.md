@@ -6,14 +6,14 @@ media across connected wireless devices. The only remarkable problem was is requ
 to manually copy required content to hdd, at least when you already have some instance
 of Plex set up. But now, with plexiglas, you can easily have multiple servers with similar data.
 
-**WARNING** upon loading `plexiglas` changes default PlexApi config path to `~/.config/plexiglas/config.ini`. 
-
 ## Features
 
 * [X] [Mobile Sync](https://support.plex.tv/articles/201082477-quick-guide-to-mobile-sync/), Plex Pass subscribers only
     * [X] Limit used space
 * [X] Work with Python 2.7
-    * [ ] Work on WD My Passport Wireless Pro
+    * [X] Work on WD My Passport Wireless Pro
+        * [X] Run and able to download files
+        * [X] Keyring is working
 * [X] Resume transfer
 * [ ] Simple downloading of original video for those, who don't have PlexPass. Please see [Plex Downloader](https://github.com/danstis/PlexDownloader) for now
     * [ ] With configurable transcoding

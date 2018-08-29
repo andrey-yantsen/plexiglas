@@ -9,5 +9,6 @@ tqdm = "*"
 keyring = "*"
 plexapi = {editable = true, ref = "sync", git = "https://github.com/andrey-yantsen/python-plexapi.git"}
 humanfriendly = "*"
+six = "*"
 
 [dev-packages]
