@@ -84,6 +84,9 @@ def process_opts(opts):
         else:
             opts.limit_disk_usage = hf.parse_size(opts.limit_disk_usage, binary=True)
 
+    if opts.rate_limit and not opts.rate_limit.isdigit():
+        opts.rate_limit = hf.parse_size(opts.rate_limit, binary=True)
+
 
 def init_logging(opts):
     log.propagate = False
@@ -141,6 +144,7 @@ def parse_arguments():
                                                     'devices list (default "%(default)s")', default=uname()[1])
     parser.add_argument('-r', '--resume-downloads', help='Allow to resume downloads (the result file may be broken)',
                         action='store_const', const=True, default=False)
+    parser.add_argument('--rate-limit', help='Limit bandwidth usage per second (e.g. 1M, 100K)')
 
     return parser.parse_args()
 
@@ -177,7 +181,7 @@ def main():
         try:
             plex = get_plex_client(opts)
             required_media, sync_list_without_changes = plexsync.sync(plex, opts.destination, opts.limit_disk_usage,
-                                                                      opts.resume_downloads)
+                                                                      opts.resume_downloads, opts.rate_limit)
             cleanup(opts.destination, opts.mark_watched, required_media, sync_list_without_changes, plex)
         except ReadTimeout:
             if stop:

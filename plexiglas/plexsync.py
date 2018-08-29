@@ -14,7 +14,7 @@ def get_download_part(media, sync_item):
             return part
 
 
-def download_media(plex, sync_item, media, part, path, resume_downloads):
+def download_media(plex, sync_item, media, part, path, resume_downloads, rate_limit):
     from .content import makedirs, download
 
     log.debug('Checking media#%d %s', media.ratingKey, media.title)
@@ -35,7 +35,7 @@ def download_media(plex, sync_item, media, part, path, resume_downloads):
     if not os.path.isfile(path_tmp) or os.path.getsize(path_tmp) != part.size:
         try:
             download(url, token=plex.authenticationToken, session=media._server._session, filename=filename_tmp,
-                     savepath=savepath, showstatus=True)
+                     savepath=savepath, showstatus=True, rate_limit=rate_limit)
         except:
             if os.path.isfile(path_tmp) and os.path.getsize(path_tmp) != part.size and not resume_downloads:
                 os.unlink(path_tmp)
@@ -47,7 +47,7 @@ def download_media(plex, sync_item, media, part, path, resume_downloads):
     os.rename(path_tmp, path)
 
 
-def sync(plex, destination, limit_disk_usage, resume_downloads):
+def sync(plex, destination, limit_disk_usage, resume_downloads, rate_limit):
     sync_items = plex.syncItems().items
     required_media = []
     sync_list_without_changes = []
@@ -86,6 +86,6 @@ def sync(plex, destination, limit_disk_usage, resume_downloads):
                     log.debug('Not downloading %s from %s, due to low available space', media.title, item.title)
                     continue
 
-                download_media(plex, item, media, part, destination, resume_downloads)
+                download_media(plex, item, media, part, destination, resume_downloads, rate_limit)
 
     return required_media, sync_list_without_changes

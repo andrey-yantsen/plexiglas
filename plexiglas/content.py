@@ -1,5 +1,6 @@
 from . import db, log
 import os
+from .token_bucket import rate_limit as limit_bandwidth
 
 
 def cleanup(path, mark_watched, required_media, sync_list_without_changes, plex):
@@ -70,7 +71,7 @@ def makedirs(name, mode=0o777, exist_ok=False):
 
 
 def download(url, token, session, filename, savepath=None, chunksize=4024,
-             showstatus=False):
+             showstatus=False, rate_limit=None):
     """ Helper to download a thumb, videofile or other media item. Returns the local
         path to the downloaded file.
 
@@ -88,7 +89,6 @@ def download(url, token, session, filename, savepath=None, chunksize=4024,
             /path/to/file
     """
 
-    from . import log
     from requests import codes
 
     # make sure the savepath directory exists
@@ -129,8 +129,16 @@ def download(url, token, session, filename, savepath=None, chunksize=4024,
 
         bar = tqdm(unit='B', unit_scale=True, total=total, desc=filename, initial=initial)
 
+    if rate_limit and 0 < rate_limit < chunksize:
+        chunksize = rate_limit
+
     with open(fullpath, file_mode) as handle:
-        for chunk in response.iter_content(chunk_size=chunksize):
+        iter_content = response.iter_content(chunk_size=chunksize)
+
+        if rate_limit and rate_limit > 0:
+            iter_content = limit_bandwidth(iter_content, rate_limit)
+
+        for chunk in iter_content:
             handle.write(chunk)
             if showstatus:
                 bar.update(len(chunk))

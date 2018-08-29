@@ -19,7 +19,7 @@ of Plex set up. But now, with plexiglas, you can easily have multiple servers wi
     * [ ] With configurable transcoding
     * [ ] Automatically remove watched videos
 * [X] Mark missing videos as watched
-* [ ] Limit bandwidth
+* [X] Limit bandwidth
 
 ## Installation and usage
 
