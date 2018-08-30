@@ -10,6 +10,7 @@ of Plex set up. But now, with plexiglas, you can easily have multiple servers wi
 
 * [X] [Mobile Sync](https://support.plex.tv/articles/201082477-quick-guide-to-mobile-sync/), Plex Pass subscribers only
     * [X] Limit used space
+    * [ ] Minimize transcoding somehow (no idea if it's possible)
 * [X] Work with Python 2.7
     * [X] Work on WD My Passport Wireless Pro ([docs](https://github.com/andrey-yantsen/plexiglas/wiki/Running-from-WD-My-Passport-Wireless-Pro))
         * [X] Run and able to download files
