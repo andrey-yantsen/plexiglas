@@ -20,6 +20,7 @@ jobs:
         - provider: pypi
           user: andrey_yantsen
           password: $PYPI_PASSWORD
+          skip_cleanup: true
           on:
             tags: true
             distributions: sdist bdist_wheel
