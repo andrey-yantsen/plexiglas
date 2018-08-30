@@ -1,6 +1,7 @@
 import sqlite3
 from contextlib import contextmanager
 from uuid import uuid4
+from . import log
 
 
 CURRENT_VERSION = 1
@@ -101,12 +102,14 @@ def mark_downloaded(item, media, filesize, filename=None):
     :return:
     """
     with _get_db() as conn:
+        log.debug('Marking as downloaded item#%d, media#%d', item.id, media.ratingKey)
         cur = conn.cursor()
         cur.execute('INSERT OR IGNORE INTO syncs (machine_id, sync_id, title) VALUES (?, ?, ?)',
                     (item.machineIdentifier, item.id, item.title))
 
         cur.execute('SELECT id FROM syncs WHERE machine_id = ? AND sync_id = ?', (item.machineIdentifier, item.id))
         sync_id = cur.fetchone()[0]
+        log.debug('SyncItem id in internal db %d', (sync_id, ))
 
         cur.execute('UPDATE syncs SET title = ?, version = ? WHERE id = ?', (item.title, item.version, sync_id))
 
@@ -114,6 +117,7 @@ def mark_downloaded(item, media, filesize, filename=None):
                     (sync_id, media.ratingKey))
         cur.execute('SELECT id FROM items WHERE sync_id = ? and media_id = ?', (sync_id, media.ratingKey))
         item_id = cur.fetchone()[0]
+        log.debug('Media id in internal db %d', (sync_id, ))
 
         cur.execute('UPDATE items SET downloaded = 1, title = ?, filename = ?, filesize = ?, media_type = ? '
                     'WHERE id = ?',
