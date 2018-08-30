@@ -113,7 +113,8 @@ def mark_downloaded(item, media, filesize, filename=None):
 
         cur.execute('UPDATE syncs SET title = ?, version = ? WHERE id = ?', (item.title, item.version, sync_id))
 
-        cur.execute('INSERT OR IGNORE INTO items (sync_id, media_id, title, filename) VALUES (?, ?, "", "")',
+        cur.execute('INSERT OR IGNORE INTO items (sync_id, media_id, title, filename, media_type) VALUES '
+                    '(?, ?, "", "", "")',
                     (sync_id, media.ratingKey))
         cur.execute('SELECT id FROM items WHERE sync_id = ? and media_id = ?', (sync_id, media.ratingKey))
         item_id = cur.fetchone()[0]
