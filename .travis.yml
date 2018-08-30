@@ -1,17 +1,16 @@
-language:
-  - python
+language: python
 python:
   - '2.7'
 matrix:
   fast_finish: true
-  matrix:
   include:
     - if: tag IS NOT present
       python: "3.6"
 
 cache: pip
 script:
-  - true
+  - "true"
+
 deploy:
   - provider: pypi
     user: andrey_yantsen
