@@ -4,7 +4,7 @@ I'm using it especially for copying movies and tv-shows from my main server to a
 on my external HDD (WD My Passport Wireless Pro).
 """
 
-__version__ = '0.1.4'
+__version__ = '0.1.5'
 
 import logging
 
