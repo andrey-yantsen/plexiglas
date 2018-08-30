@@ -23,7 +23,10 @@ def download_media(plex, sync_item, media, part, path, resume_downloads, rate_li
     filename_tmp = filename + '.part'
 
     savepath = os.path.join(path, sync_item.title)
-    url = part._server.url(part.key)
+    part_key = part.key
+    if part.decision == 'directplay':
+        part_key = '/' + '/'.join(part_key.split('/')[3:])
+    url = part._server.url(part_key)
     log.info('Downloading %s to %s, file size is %s', filename, savepath, format_size(part.size, binary=True))
     makedirs(savepath, exist_ok=True)
 
