@@ -102,3 +102,5 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+wd-mypassport-wireless-pro/*.zip

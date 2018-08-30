@@ -1,0 +1,14 @@
+[Unit]
+Description=Plexiglas
+After=network.target
+
+[Service]
+WorkingDirectory=/DataVolume/plexiglas
+Environment=LC_ALL=en_US.UTF-8
+Environment=PYTHONHOME=/DataVolume/python/
+Type=simple
+ExecStart=/bin/sh -c '/DataVolume/python/bin/plexiglas -d /DataVolume/PlexSync --loop --delay 600 -w -r -i -n "MyPassport Wireless Pro" --limit-disk-usage 30% --rate-limit 3M --log-file /DataVolume/PlexSync/plexiglas.log'
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
