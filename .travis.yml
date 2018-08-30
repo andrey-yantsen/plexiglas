@@ -7,6 +7,8 @@ stages:
   - name: deploy
     if: tag IS present
 
+script: true
+
 jobs:
   include:
     - python: 2.7
