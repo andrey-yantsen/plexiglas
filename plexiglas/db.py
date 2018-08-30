@@ -109,7 +109,7 @@ def mark_downloaded(item, media, filesize, filename=None):
 
         cur.execute('SELECT id FROM syncs WHERE machine_id = ? AND sync_id = ?', (item.machineIdentifier, item.id))
         sync_id = cur.fetchone()[0]
-        log.debug('SyncItem id in internal db %d', (sync_id, ))
+        log.debug('SyncItem id in internal db %d', sync_id)
 
         cur.execute('UPDATE syncs SET title = ?, version = ? WHERE id = ?', (item.title, item.version, sync_id))
 
@@ -117,7 +117,7 @@ def mark_downloaded(item, media, filesize, filename=None):
                     (sync_id, media.ratingKey))
         cur.execute('SELECT id FROM items WHERE sync_id = ? and media_id = ?', (sync_id, media.ratingKey))
         item_id = cur.fetchone()[0]
-        log.debug('Media id in internal db %d', (sync_id, ))
+        log.debug('Media id in internal db %d', sync_id)
 
         cur.execute('UPDATE items SET downloaded = 1, title = ?, filename = ?, filesize = ?, media_type = ? '
                     'WHERE id = ?',
