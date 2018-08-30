@@ -73,20 +73,32 @@ def _init_db(conn):
     conn.commit()
 
 
-def get_client_uuid():
+def get_param(name, default=None):
     with _get_db() as conn:
         cur = conn.cursor()
-        cur.execute('SELECT value FROM settings WHERE name = ?', ('client_uuid', ))
-        uuid = cur.fetchone()
-
-        if uuid:
-            uuid = uuid[0]
+        cur.execute('SELECT value FROM settings WHERE name = ?', (name, ))
+        ret = cur.fetchone()
+        if ret:
+            return ret[0]
         else:
-            uuid = str(uuid4()).upper()
-            cur.execute('INSERT INTO settings (name, value) VALUES (?, ?)', ('client_uuid', uuid))
-            conn.commit()
+            return default
 
-        return uuid
+
+def set_param(name, value):
+    with _get_db() as conn:
+        conn.execute('INSERT OR IGNORE INTO settings (name, value) VALUES (?, "")', (name, ))
+        conn.execute('UPDATE settings SET value = ? WHERE name = ?', (str(value), name))
+        conn.commit()
+
+
+def get_client_uuid():
+    uuid = get_param('client_uuid')
+
+    if uuid is None:
+        uuid = str(uuid4()).upper()
+        set_param('client_uuid', uuid)
+
+    return uuid
 
 
 def mark_downloaded(item, media, filesize, filename=None):
