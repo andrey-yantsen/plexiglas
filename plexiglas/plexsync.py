@@ -1,11 +1,12 @@
 from collections import defaultdict
 from itertools import groupby
 from operator import itemgetter
+import os
+from humanfriendly import format_size
 
 from . import log
 from .content import pretty_filename, get_available_disk_space
 from . import db
-import os
 
 
 def get_download_part(media, sync_item):
@@ -23,7 +24,7 @@ def download_media(plex, sync_item, media, part, path, resume_downloads, rate_li
 
     savepath = os.path.join(path, sync_item.title)
     url = part._server.url(part.key)
-    log.info('Downloading %s to %s', filename, savepath)
+    log.info('Downloading %s to %s, file size is %s', filename, savepath, format_size(part.size, binary=True))
     makedirs(savepath, exist_ok=True)
 
     path = os.path.join(savepath, filename)
