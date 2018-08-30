@@ -20,15 +20,18 @@ of Plex set up. But now, with plexiglas, you can easily have multiple servers wi
     * [ ] Automatically remove watched videos
 * [X] Mark missing videos as watched
 * [X] Limit bandwidth
+* [ ] Trailers downloading & converting to mp4
 
-## Installation and usage
-
-Currently the `app` doesn't have a proper distribution mechanism, so you have to clone the repo to any place and run
-following commands in it:
+## Installation
 
 ```
-pipenv install
-pipenv run python3 -m plexiglas.__init__ -d "/Volumes/My Passport/PlexSync" --limit-disk-usage 10% -w
+pip install --process-dependency-links plexiglas
+```
+
+## Usage
+
+```
+plexiglas -d "/Volumes/My Passport/PlexSync" --limit-disk-usage 10% -w
 ```
 
 Following arguments are currently supported:

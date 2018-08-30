@@ -1,0 +1,7 @@
+https://github.com/andrey-yantsen/python-plexapi/tarball/sync#egg=plexapi-3.0.6
+humanfriendly==4.16.1
+keyring==13.2.1
+keyrings.cryptfile==1.2.1
+requests==2.19.1
+six==1.11.0
+tqdm==4.25.0
