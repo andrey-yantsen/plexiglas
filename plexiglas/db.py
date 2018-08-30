@@ -152,4 +152,4 @@ def get_downloaded_size():
     with _get_db() as conn:
         cur = conn.cursor()
         cur.execute('SELECT SUM(filesize) FROM items i WHERE i.downloaded = 1')
-        return cur.fetchone()[0]
+        return cur.fetchone()[0] or 0

@@ -176,7 +176,7 @@ def main():
             sleep(int(opts.delay))
             continue
 
-        disk_used = db.get_downloaded_size() or 0
+        disk_used = db.get_downloaded_size()
         disk_used_hf = hf.format_size(disk_used, binary=True)
         if disk_used > 0 and disk_used_hf != last_reported_du:
             last_reported_du = disk_used_hf
