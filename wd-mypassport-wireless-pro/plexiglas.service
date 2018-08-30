@@ -3,7 +3,7 @@ Description=Plexiglas
 After=network.target
 
 [Service]
-WorkingDirectory=/DataVolume/plexiglas
+WorkingDirectory=/DataVolume
 Environment=LC_ALL=en_US.UTF-8
 Environment=PYTHONHOME=/DataVolume/python/
 Type=simple
