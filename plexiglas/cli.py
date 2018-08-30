@@ -47,7 +47,7 @@ def process_opts(opts):
         opts.password = getpass.getpass('Enter the plex.tv password for %s: ' % opts.username)
         keyring.set_password('plexiglas', opts.username, opts.password)
 
-    opts.destination = os.path.expanduser(opts.destination)
+    opts.destination = os.path.realpath(os.path.expanduser(opts.destination))
 
     if not os.access(opts.destination, os.W_OK):
         try:
