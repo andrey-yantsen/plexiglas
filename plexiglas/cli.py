@@ -144,6 +144,8 @@ def parse_arguments():
                                                  'additional password (useful when running headless on some strange '
                                                  'devices like WD My Passport Wireless Pro)',
                         default=False, action='store_const', const=True)
+    parser.add_argument('--skip', help='Name of the file (including parent directory, which is the sync name) to skip, '
+                                       'may be used multiple times', action='append', default=[])
 
     return parser.parse_args()
 
@@ -184,8 +186,7 @@ def main():
 
         try:
             plex = get_plex_client(opts)
-            required_media, sync_list_without_changes = plexsync.sync(plex, opts.destination, opts.limit_disk_usage,
-                                                                      opts.resume_downloads, opts.rate_limit)
+            required_media, sync_list_without_changes = plexsync.sync(plex, opts)
             cleanup(opts.destination, opts.mark_watched, required_media, sync_list_without_changes, plex)
         except exceptions.RequestException:
             if stop:

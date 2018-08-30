@@ -15,14 +15,19 @@ def get_download_part(media, sync_item):
             return part
 
 
-def download_media(plex, sync_item, media, part, path, resume_downloads, rate_limit):
+def download_media(plex, sync_item, media, part, opts):
     from .content import makedirs, download
 
     log.debug('Checking media#%d %s', media.ratingKey, media.title)
     filename = pretty_filename(media, part)
     filename_tmp = filename + '.part'
 
-    savepath = os.path.join(path, sync_item.title)
+    savepath = os.path.join(opts.destination, sync_item.title)
+
+    if os.sep.join(os.path.join(savepath, filename).split(os.sep)[-2:]) in opts.skip:
+        log.info('Skipping file %s from %s due to cli arguments', filename, savepath)
+        return
+
     part_key = part.key
     if part.decision == 'directplay':
         part_key = '/' + '/'.join(part_key.split('/')[3:])
@@ -33,7 +38,7 @@ def download_media(plex, sync_item, media, part, path, resume_downloads, rate_li
     path = os.path.join(savepath, filename)
     path_tmp = os.path.join(savepath, filename_tmp)
 
-    if not resume_downloads and os.path.isfile(path_tmp) and os.path.getsize(path_tmp) != part.size:
+    if not opts.resume_downloads and os.path.isfile(path_tmp) and os.path.getsize(path_tmp) != part.size:
         os.unlink(path_tmp)
 
     if os.path.isfile(path_tmp) and os.path.getsize(path_tmp) > part.size:
@@ -44,9 +49,9 @@ def download_media(plex, sync_item, media, part, path, resume_downloads, rate_li
     if not os.path.isfile(path_tmp) or os.path.getsize(path_tmp) != part.size:
         try:
             download(url, token=plex.authenticationToken, session=media._server._session, filename=filename_tmp,
-                     savepath=savepath, showstatus=True, rate_limit=rate_limit)
+                     savepath=savepath, showstatus=True, rate_limit=opts.rate_limit)
         except:
-            if os.path.isfile(path_tmp) and os.path.getsize(path_tmp) != part.size and not resume_downloads:
+            if os.path.isfile(path_tmp) and os.path.getsize(path_tmp) != part.size and not opts.resume_downloads:
                 os.unlink(path_tmp)
             raise
 
@@ -61,7 +66,7 @@ def download_media(plex, sync_item, media, part, path, resume_downloads, rate_li
     os.rename(path_tmp, path)
 
 
-def sync(plex, destination, limit_disk_usage, resume_downloads, rate_limit):
+def sync(plex, opts):
     sync_items = plex.syncItems().items
     required_media = []
     sync_list_without_changes = []
@@ -82,7 +87,7 @@ def sync(plex, destination, limit_disk_usage, resume_downloads, rate_limit):
             log.debug('No changes for the item#%d %s', item.id, item.status)
             continue
 
-        if limit_disk_usage and disk_used > limit_disk_usage:
+        if opts.limit_disk_usage and disk_used > opts.limit_disk_usage:
             sync_list_without_changes.append((item.machineIdentifier, item.id))
             log.debug('Disk limit exceeded, skipping item#%d', item.id)
             continue
@@ -91,15 +96,15 @@ def sync(plex, destination, limit_disk_usage, resume_downloads, rate_limit):
             required_media.append((item.machineIdentifier, media.ratingKey))
             part = get_download_part(media, item)
             if part:
-                if limit_disk_usage and disk_used + part.size > limit_disk_usage:
+                if opts.limit_disk_usage and disk_used + part.size > opts.limit_disk_usage:
                     log.debug('Not downloading %s from %s, size limit would be exceeded', media.title,
                               item.title)
                     continue
 
-                if get_available_disk_space(destination) < part.size:
+                if get_available_disk_space(opts.destination) < part.size:
                     log.debug('Not downloading %s from %s, due to low available space', media.title, item.title)
                     continue
 
-                download_media(plex, item, media, part, destination, resume_downloads, rate_limit)
+                download_media(plex, item, media, part, opts)
 
     return required_media, sync_list_without_changes
