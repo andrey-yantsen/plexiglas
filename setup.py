@@ -7,7 +7,7 @@ version = None
 with open('plexiglas/__init__.py') as handle:
     for line in handle.readlines():
         if line.startswith('__version__'):
-            version = re.findall("'([0-9\.]+?)'", line)[0]
+            version = re.findall("'([^']+?)'", line)[0]
             break
 
 if version is None:

@@ -14,16 +14,17 @@ jobs:
     - python: 2.7
     - python: 3.6
     - stage: deploy
+      name: "Deploy to PyPi & GitHub"
       python: 3.6
-      script: true
+      script: .travis/prepare_deploy.sh
       deploy:
         - provider: pypi
           user: andrey_yantsen
           password: $PYPI_PASSWORD
           skip_cleanup: true
+          distributions: sdist bdist_wheel
           on:
             tags: true
-            distributions: sdist bdist_wheel
             repo: andrey-yantsen/plexiglas
         - provider: releases
           api_key: $GITHUB_OAUTH_TOKEN
@@ -34,3 +35,15 @@ jobs:
           on:
             tags: true
             repo: andrey-yantsen/plexiglas
+    - python: 2.7
+      name: "Deploy wheel for Python 2.7 to PyPi"
+      script: .travis/prepare_deploy.sh
+      deploy:
+      - provider: pypi
+        user: andrey_yantsen
+        password: $PYPI_PASSWORD
+        skip_cleanup: true
+        distributions: bdist_wheel
+        on:
+          tags: true
+          repo: andrey-yantsen/plexiglas
