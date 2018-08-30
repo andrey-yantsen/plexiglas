@@ -42,6 +42,11 @@ def download_media(plex, sync_item, media, part, path, resume_downloads, rate_li
                 os.unlink(path_tmp)
             raise
 
+    if not os.path.isfile(path_tmp) or os.path.getsize(path_tmp) != part.size:
+        log.error('File "%s" has an unexpected size (actual: %d, expected: %d)', path_tmp, os.path.getsize(path_tmp),
+                  part.size)
+        raise ValueError('Downloaded file size is not the same as expected')
+
     db.mark_downloaded(sync_item, media, part.size, filename)
     sync_item.markDownloaded(media)
 
