@@ -1,0 +1,18 @@
+deploy:
+  - provider: pypi
+    user: $PYPI_USERNAME
+    password:
+      secure: $PYPI_PASSWORD_ENCRYPTED
+    on:
+      tags: true
+      distributions: sdist bdist_wheel
+      repo: andrey-yantsen/plexiglas
+  - provider: releases
+    api_key:
+      secure: $GITHUB_OAUTH_TOKEN_ENCRYPTED
+    file_glob: true
+    file: "dist/*"
+    prerelease: true
+    on:
+      tags: true
+      repo: andrey-yantsen/plexiglas
