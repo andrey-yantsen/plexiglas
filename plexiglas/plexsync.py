@@ -33,6 +33,11 @@ def download_media(plex, sync_item, media, part, path, resume_downloads, rate_li
     if not resume_downloads and os.path.isfile(path_tmp) and os.path.getsize(path_tmp) != part.size:
         os.unlink(path_tmp)
 
+    if os.path.isfile(path_tmp) and os.path.getsize(path_tmp) > part.size:
+        log.error('File "%s" has an unexpected size (actual: %d, expected: %d), removing it', path_tmp,
+                  os.path.getsize(path_tmp), part.size)
+        os.unlink(path_tmp)
+
     if not os.path.isfile(path_tmp) or os.path.getsize(path_tmp) != part.size:
         try:
             download(url, token=plex.authenticationToken, session=media._server._session, filename=filename_tmp,
