@@ -9,16 +9,16 @@ script:
   - true
 deploy:
   - provider: pypi
-    user: $PYPI_USERNAME
+    user: andrey_yantsen
     password:
-      secure: $PYPI_PASSWORD_ENCRYPTED
+      secure: "Wyqv50a09vN8+aSnm/SNeKSw7Kpo4fG+Jubuqf5riCZa9jNJzqKPkvJfEsNfjtO49ddQqtjl6lC4JpVAwmhj1uFhvPstsu3BcHk8cr/ENBeEgGcN6qus2I29vV0Ju2Ef7Z099S6ydRZzTzfFwRlMQ2j3sViJp0GtiBuEUlHtsLJi1S1esuailoFzwVgt8FfDG0KvQN8IxiX1aH3v4UhWyvlmOuWyUoA28dIPw/NdWK2kGa466653+TaRjTsTBwzTkY3fJ7KHjwiZA41NUJRIRIiRA3g3lJ1IQ+yfBkcF+PciJ7RyEdtEqzGDKqcRzRYvRrcSlWBl2c7DxWEsKurLnjQHifZkxi++30Px4raKxQUYghvnfTSOYy4ysXsyABip4zliPJLrvQO0pgXDg7L60Bg9BMAgxR5vga0RDM2m7larFowfWofiUBt/p6w8b2hA0Zujxx3N28tS51n6ZK79XeN7a5Hjv+YhvG8tKfiFauELcamOIvvwLzDrHhzUXG7JNIAocaIiIcovYkXfjJDCClGw3RX7SJn6CNn6Z2ZfvkRP/zOTPe+g7mSTUqohkGxHr1kZ8VOhW53dD0xx//j4Mc56dGPZMs9KdnG/j2rw5fXo5qliKPw9LICVfXXSm7Q097Ob7CzxnN7WcJjzVal4OpNFBLJSXQdNfRqLP+D4kFY="
     on:
       tags: true
       distributions: sdist bdist_wheel
       repo: andrey-yantsen/plexiglas
   - provider: releases
     api_key:
-      secure: $GITHUB_OAUTH_TOKEN_ENCRYPTED
+      secure: "ninT2kBoOnAcAsRX5JQ0QDiqP8hzGnCxsfYZVsM5yynSwLPDsHa7TtVlK+gUMdDoHYnn2D3gJ4l5njFGEvmmBBa/Ru7cfytzJuYt7qUoUk2t905ugympw/cWR5CI0RX7bw5Ur/IdBdHQxS3d/OZqYMiwJ0XH1bGHGqmf6mP8jZ/n5y67XLTjPKI+xe3QumMilO0/0VYGiNaq9hemQLpBQAVgaei/QBCR0DFkwsw135cOBjh+Yd90mCeP0BZG+g0ZJt4GoR1Bcm+wnTD/6nAb+oXYeRP/1Yk++ZfidVWkVCSSlJsliQp89YTNqIY7Cl6DXf80tzdnORMGNKu/zySitV8jsFkZyQKIMa28h6x2clbqzANNGTf2nqxWtZ0seOiACtnsdD5UUhWsgak5JEiyTxQlThPPv17Vu/bu1fXHPK9L+rGSCn+uWDxaqLu1ILborPK/BBam8JyCuudXGA7FZqq7LyvzudA9W3wvwI9XESsWyBDWkZ0Awo9ARerf6gCf34UVKwMLXluHmcUeu3sWMkHm4m4kY/aznvP0gYr+wJFCKbGI4anXkYJSMhMskXdUhHUXPKdf38q4xs+dpvHfWp9BVDPqzSD2vSR4eL9VgCLDIKTp7RiTJwEEZmt5dNDkDIOJvia0KXTEITt+mZ63uZYF2U8foP6MVCE5rWKY1zg="
     file_glob: true
     file: "dist/*"
     prerelease: true
