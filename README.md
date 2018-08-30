@@ -28,6 +28,8 @@ of Plex set up. But now, with plexiglas, you can easily have multiple servers wi
 pip install --process-dependency-links plexiglas
 ```
 
+Option `--process-dependency-links` is a temporary requirement, while plexapi doesn't have sync api.
+
 ## Usage
 
 ```
@@ -46,6 +48,11 @@ marked as watched
 * `-v`, `--verbose` — enable logging from underlying library (plexapi)
 * `-s`, `--limit-disk-usage` — sets disk usage limit, supported human-readable format and percents of total disk space
 * `--loop` — run the script in a loop, so it will monitor for updates
-* `--delay` — sets delay (in seconds) between iterations 
+* `--delay` — sets delay (in seconds) between iterations
+* `-n`, `--device-name` — allows to set human-readable device name instead of computer name
+* `-r`, `--resume-downloads` — restart download if file is exist
+* `--rate-limit` — limit bandwidth usage
+* `-q` — close application right after initialization and storing all required data in keyring
+* `-i`, `--insecure` — use insecure keyring, which can be used in non-interactive mode
 
 If you wouldn't provide a username and/or password the app will ask you to provide them in interactive mode
