@@ -30,7 +30,7 @@ def download_media(plex, sync_item, media, part, path, resume_downloads, rate_li
     path = os.path.join(savepath, filename)
     path_tmp = os.path.join(savepath, filename_tmp)
 
-    if not resume_downloads and os.path.isfile(path_tmp) and os.path.getsize(path) != part.size:
+    if not resume_downloads and os.path.isfile(path_tmp) and os.path.getsize(path_tmp) != part.size:
         os.unlink(path_tmp)
 
     if not os.path.isfile(path_tmp) or os.path.getsize(path_tmp) != part.size:
