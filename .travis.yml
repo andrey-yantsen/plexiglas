@@ -2,9 +2,11 @@ language:
   - python
 python:
   - '2.7'
-  - '3.7'
+  - '3.6'
 matrix:
   fast_finish: true
+script:
+  - true
 deploy:
   - provider: pypi
     user: $PYPI_USERNAME
