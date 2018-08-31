@@ -19,7 +19,12 @@ jobs:
     - stage: deploy
       name: "Deploy to PyPi & GitHub"
       python: 3.6
-      script: .travis/prepare_deploy.sh
+      before_install:
+        - pip install --upgrade pip setuptools
+      install:
+        - pip install -r requirements_dev.txt
+      script:
+        - .travis/prepare_deploy.sh
       deploy:
         - provider: pypi
           user: andrey_yantsen
