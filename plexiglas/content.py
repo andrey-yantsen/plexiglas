@@ -3,12 +3,15 @@ import os
 from .token_bucket import rate_limit as limit_bandwidth
 
 
-def cleanup(path, mark_watched, required_media, sync_list_without_changes, plex):
-    for (db_item_id, machine_id, sync_id, media_id, sync_title, media_filename) in db.get_all_downloaded():
-        media_path = os.path.join(path, sync_title, media_filename)
+def cleanup(plex, required_media, sync_list_without_changes, opts):
+    for (db_item_id, machine_id, sync_id, media_id, sync_title, media_type, media_filename) in db.get_all_downloaded():
+        if media_type == 'movie' and opts.subdir:
+            media_path = os.path.join(opts.destination, sync_title, os.path.splitext(media_filename)[0], media_filename)
+        else:
+            media_path = os.path.join(opts.destination, sync_title, media_filename)
         if (machine_id, media_id) in required_media or (machine_id, sync_id) in sync_list_without_changes:
             if not os.path.isfile(media_path):
-                if mark_watched:
+                if opts.mark_watched:
                     conn = None
                     for res in plex.resources():
                         if res.clientIdentifier == machine_id:

@@ -28,6 +28,9 @@ def download_media(plex, sync_item, media, part, opts):
         log.info('Skipping file %s from %s due to cli arguments', filename, savepath)
         return
 
+    if media.TYPE == 'movie' and opts.subdir:
+        savepath = os.path.join(savepath, os.path.splitext(filename)[0])
+
     part_key = part.key
     if part.decision == 'directplay':
         part_key = '/' + '/'.join(part_key.split('/')[3:])

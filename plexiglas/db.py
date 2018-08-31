@@ -135,13 +135,16 @@ def remove_downloaded(machine_id, sync_id, media_id):
 def get_all_downloaded():
     with _get_db() as conn:
         cur = conn.cursor()
-        cur.execute('SELECT i.id, s.machine_id, s.sync_id, i.media_id, s.title, i.filename FROM syncs s '
+        cur.execute('SELECT i.id, s.machine_id, s.sync_id, i.media_id, s.title, i.media_type, i.filename FROM syncs s '
                     'JOIN items i ON i.sync_id = s.id WHERE i.downloaded = 1')
         return cur.fetchall()
 
 
-def get_downloaded_size():
+def get_downloaded_size(media_type=None):
     with _get_db() as conn:
         cur = conn.cursor()
-        cur.execute('SELECT SUM(filesize) FROM items i WHERE i.downloaded = 1')
+        if media_type:
+            cur.execute('SELECT SUM(filesize) FROM items i WHERE i.downloaded = 1 AND media_type = ?', (media_type, ))
+        else:
+            cur.execute('SELECT SUM(filesize) FROM items i WHERE i.downloaded = 1')
         return cur.fetchone()[0] or 0

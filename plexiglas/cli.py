@@ -151,8 +151,31 @@ def parse_arguments():
     group.add_argument('--rate-limit', help='Limit bandwidth usage per second (e.g. 1M, 100K)')
     group.add_argument('--skip', help='Name of the file (including parent directory, which is the sync name) to skip, '
                                       'may be used multiple times', action='append', default=[])
+    group.add_argument('--subdir', help='Place movies files into subdirectories, so you would be able to add here some '
+                                        'extras (trailers, behind the scenes, etc.)\n'
+                                        '!WARNING! It`s unsafe to set this option after the files has been synced, you '
+                                        'should move them to appropriate folders by yourself!', action='store_true',
+                       default=False)
 
     return parser.parse_args()
+
+
+def confirm(prompt, default=False):
+    from six.moves import input
+
+    if default is True:
+        prompt += ' [Y/n] '
+    else:
+        prompt += ' [y/N] '
+
+    while 1:
+        answer = input(prompt).strip().lower()
+        if answer == '':
+            return default
+        elif answer in ('yes', 'y'):
+            return True
+        elif answer in ('no', 'n'):
+            return False
 
 
 def main():
@@ -164,6 +187,15 @@ def main():
 
     opts = parse_arguments()
     process_opts(opts)
+
+    if db.get_param('subdir', False) != opts.subdir:
+        if db.get_downloaded_size('movie') > 0 or True:
+            if confirm('You`ve changed `subdir` parameter, are you really sure?'):
+                db.set_param('subdir', opts.subdir)
+            else:
+                exit(1)
+        else:
+            db.set_param('subdir', opts.subdir)
 
     if opts.q:
         get_plex_client(opts)
@@ -193,7 +225,7 @@ def main():
             try:
                 plex = get_plex_client(opts)
                 required_media, sync_list_without_changes = plexsync.sync(plex, opts)
-                cleanup(opts.destination, opts.mark_watched, required_media, sync_list_without_changes, plex)
+                cleanup(plex, required_media, sync_list_without_changes, opts)
             except exceptions.RequestException:
                 if stop:
                     raise
