@@ -41,19 +41,22 @@ Following arguments are currently supported:
 
 * `-u`, `--username` — your Plex.tv username, after the first run in will be securely stored in a keychain
 * `-p`, `--password` — your Plex.tv password, after the first run in will be securely stored in a keychain
+* `-n`, `--device-name` — allows to set human-readable device name instead of computer name
 * `-d`, `--destination` — the path where to store downloaded files and Plexiglas' DB, current dir by default. Do not
-forget to copy `.plexiglas.db` file to the new path manually, If you'd like to change the folder
+    forget to copy `.plexiglas.db` file to the new path manually, If you'd like to change the folder
 * `-w`, `--mark-watched` — if a previously downloaded file is missing within destination directory the media would be
-marked as watched
+    marked as watched
 * `--debug` — enable debug logging
 * `-v`, `--verbose` — enable logging from underlying library (plexapi)
 * `-s`, `--limit-disk-usage` — sets disk usage limit, supported human-readable format and percents of total disk space
 * `--loop` — run the script in a loop, so it will monitor for updates
 * `--delay` — sets delay (in seconds) between iterations
-* `-n`, `--device-name` — allows to set human-readable device name instead of computer name
 * `-r`, `--resume-downloads` — restart download if file is exist
 * `--rate-limit` — limit bandwidth usage
 * `-q` — close application right after initialization and storing all required data in keyring
 * `-i`, `--insecure` — use insecure keyring, which can be used in non-interactive mode
+* `--skip` — skip specified file from downloading, can be used multiple times. E.g. passing `Rewatch/The Butterfly Effect (2004).mp4`
+    as an argument will skip the movie `The Butterfly Effect` from downloading to `sync` named `Rewatch`
+* `--subdir` — store each movie in subdirectory, so you can easily add extras (e.g. [trailers](https://github.com/andrey-yantsen/plexiglas/wiki/Downloading-trailers))
 
 If you wouldn't provide a username and/or password the app will ask you to provide them in interactive mode
