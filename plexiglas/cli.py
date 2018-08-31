@@ -188,14 +188,14 @@ def main():
     opts = parse_arguments()
     process_opts(opts)
 
-    if db.get_param('subdir', False) != opts.subdir:
-        if db.get_downloaded_size('movie') > 0 or True:
+    if db.get_param('subdir', '0') != str(int(opts.subdir)):
+        if db.get_downloaded_size('movie') > 0:
             if confirm('You`ve changed `subdir` parameter, are you really sure?'):
-                db.set_param('subdir', opts.subdir)
+                db.set_param('subdir', str(int(opts.subdir)))
             else:
                 exit(1)
         else:
-            db.set_param('subdir', opts.subdir)
+            db.set_param('subdir', str(int(opts.subdir)))
 
     if opts.q:
         get_plex_client(opts)
