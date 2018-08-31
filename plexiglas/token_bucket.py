@@ -34,8 +34,7 @@ class TokenBucket(object):
         """
 
         assert tokens <= self.capacity, \
-            'Attempted to consume {} tokens from a bucket with capacity {}' \
-                .format(tokens, self.capacity)
+            'Attempted to consume {} tokens from a bucket with capacity {}'.format(tokens, self.capacity)
 
         if block and tokens > self.tokens:
             deficit = tokens - self._tokens

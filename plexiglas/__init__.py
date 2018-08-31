@@ -9,11 +9,13 @@ __version__ = '_CI_SET_VERSION_'
 import logging
 
 try:
-    import keyring
+    import keyring  # noqa: F401
     from keyring.core import set_keyring
 except ImportError:
-    import keyring_stub as keyring
-    set_keyring = lambda x: None
+    import keyring_stub as keyring  # noqa: F401
+
+    def set_keyring(x):
+        pass
 
 
 log = logging.getLogger('plexiglas')

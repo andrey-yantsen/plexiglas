@@ -6,4 +6,3 @@ def get_password(service_name, username):
 def set_password(service_name, username, password):
     from . import log
     log.warning('set_password() on stub-keyring')
-

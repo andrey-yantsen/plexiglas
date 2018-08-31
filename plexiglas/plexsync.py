@@ -50,7 +50,7 @@ def download_media(plex, sync_item, media, part, opts):
         try:
             download(url, token=plex.authenticationToken, session=media._server._session, filename=filename_tmp,
                      savepath=savepath, showstatus=True, rate_limit=opts.rate_limit)
-        except:
+        except BaseException:  # handle all exceptions, anyway we'll re-raise them
             if os.path.isfile(path_tmp) and os.path.getsize(path_tmp) != part.size and not opts.resume_downloads:
                 os.unlink(path_tmp)
             raise
