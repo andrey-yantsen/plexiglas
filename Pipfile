@@ -12,3 +12,4 @@ humanfriendly = "*"
 six = "*"
 
 [dev-packages]
+"flake8" = "*"

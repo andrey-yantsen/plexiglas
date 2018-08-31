@@ -13,6 +13,9 @@ jobs:
   include:
     - python: 2.7
     - python: 3.6
+    - python: 3.6
+      name: "Flake8"
+      script: flake8 plexiglas --max-line-length=120
     - stage: deploy
       name: "Deploy to PyPi & GitHub"
       python: 3.6
