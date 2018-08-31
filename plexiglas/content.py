@@ -151,6 +151,9 @@ def download(url, token, session, filename, savepath=None, chunksize=4024,
 
                         log.info(report + appendix)
 
+                def close(self):
+                    pass
+
         total = int(response.headers.get('content-length', 0))
         initial = 0
 
