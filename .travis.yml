@@ -15,14 +15,14 @@ jobs:
     - python: 3.6
     - python: 3.6
       name: "Flake8"
+      install:
+        - pip install -r requirements_dev.txt
       script: flake8 plexiglas --max-line-length=120
     - stage: deploy
       name: "Deploy to PyPi & GitHub"
       python: 3.6
       before_install:
         - pip install --upgrade pip setuptools
-      install:
-        - pip install -r requirements_dev.txt
       script:
         - .travis/prepare_deploy.sh
       deploy:
