@@ -120,7 +120,37 @@ def download(url, token, session, filename, savepath=None, chunksize=4024,
 
     # save the file to disk
     if showstatus:  # pragma: no cover
-        from tqdm import tqdm
+        import sys
+
+        if sys.stderr.isatty():
+            from tqdm import tqdm
+        else:
+            from humanfriendly import format_size
+            from math import floor
+
+            class tqdm:
+                def __init__(self, total, desc, initial, **kwargs):
+                    self.total = total
+                    self.desc = desc
+                    self.pos = initial
+                    self.last_report = ''
+
+                def update(self, l):
+                    self.pos += l
+                    progress = floor(self.pos) / self.total * 100
+                    if progress < 99:
+                        progress = round(progress)
+                    else:
+                        progress = floor(progress)
+                    report = '%s downloaded %d%%' % (self.desc, progress)
+                    if self.last_report != report:
+                        self.last_report = report
+
+                        appendix = ' (%s out of %s)' % (format_size(self.pos, binary=True),
+                                                        format_size(self.total, binary=True))
+
+                        log.info(report + appendix)
+
         total = int(response.headers.get('content-length', 0))
         initial = 0
 
