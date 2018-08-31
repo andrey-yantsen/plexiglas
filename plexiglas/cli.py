@@ -85,7 +85,8 @@ def init_logging(opts):
 
     if opts.log_file:
         from logging.handlers import RotatingFileHandler
-        lh = RotatingFileHandler(opts.log_file, maxBytes=int(opts.log_file_max_size), backupCount=opts.log_file_backups)
+        lh = RotatingFileHandler(opts.log_file, maxBytes=int(opts.log_file_max_size),
+                                 backupCount=int(opts.log_file_backups))
     else:
         lh = logging.StreamHandler(sys.stdout)
 
@@ -96,8 +97,7 @@ def init_logging(opts):
     else:
         log_format = '[%(asctime)s] [%(levelname)s] [%(name)s] %(message)s'
 
-    lh.setFormatter(logging.Formatter(log_format,
-                                      datefmt='%d/%m/%Y %H:%M:%S'))
+    lh.setFormatter(logging.Formatter(log_format, datefmt='%d/%m/%Y %H:%M:%S'))
 
     if opts.debug:
         log.setLevel(logging.DEBUG)
