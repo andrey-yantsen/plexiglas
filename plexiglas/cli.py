@@ -114,38 +114,43 @@ def parse_arguments():
     from platform import uname
 
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('-u', '--username', help='Your Plex username')
-    parser.add_argument('-p', '--password', help='Your Plex password')
-    parser.add_argument('-d', '--destination', help='Download destination (default "%(default)s")', default=os.getcwd())
-    parser.add_argument('-w', '--mark-watched', help='Mark missing media as watched', action='store_const', const=True,
-                        default=False)
-    parser.add_argument('--debug', help='Enable debug logging', action='store_const', const=True, default=False)
-    parser.add_argument('-v', '--verbose', help='Enable logging from plexapi', action='store_const', const=True,
-                        default=False)
-    parser.add_argument('-s', '--limit-disk-usage', help='Limit total downloaded files size (eg 1G, 100M, 10%%)')
+    group = parser.add_argument_group('MyPlex', 'MyPlex authentication settings')
+    group.add_argument('-u', '--username', help='Your Plex username')
+    group.add_argument('-p', '--password', help='Your Plex password')
+    group.add_argument('-n', '--device-name', help='Device name for the Plex client instance to be displayed in '
+                                                   'devices list (default "%(default)s")', default=uname()[1])
 
-    parser.add_argument('-l', '--log-file', help='Save logs to the specified file', default=None)
-    parser.add_argument('--log-file-max-size', help='Maximum log file size in bytes (default %(default)s)',
-                        default='1M')
-    parser.add_argument('--log-file-backups', help='Count of log files` backups to store (default %(default)d)',
-                        default=3)
-    parser.add_argument('--loop', help='Run the script for indefinite amount of time', default=False,
-                        action='store_const', const=True)
-    parser.add_argument('--delay', help='Delay in seconds between iterations (only with --loop, default %(default)d)',
-                        default=60)
-    parser.add_argument('-n', '--device-name', help='Device name for the Plex client instance to be displayed in '
-                                                    'devices list (default "%(default)s")', default=uname()[1])
-    parser.add_argument('-r', '--resume-downloads', help='Allow to resume downloads (the result file may be broken)',
-                        action='store_const', const=True, default=False)
-    parser.add_argument('--rate-limit', help='Limit bandwidth usage per second (e.g. 1M, 100K)')
-    parser.add_argument('-q', help='Terminate right after saving all required data to keyring', default=False,
-                        action='store_const', const=True)
-    parser.add_argument('-i', '--insecure', help='Store your password with minimal encryption, without requiring'
-                                                 'additional password (useful when running headless on some strange '
-                                                 'devices like WD My Passport Wireless Pro)',
-                        default=False, action='store_const', const=True)
-    parser.add_argument('--skip', help='Name of the file (including parent directory, which is the sync name) to skip, '
-                                       'may be used multiple times', action='append', default=[])
+    group = parser.add_argument_group('Log', 'Logging settings')
+    group.add_argument('-l', '--log-file', help='Save logs to the specified file', default=None)
+    group.add_argument('--log-file-max-size', help='Maximum log file size in bytes (default %(default)s)',
+                       default='1M')
+    group.add_argument('--log-file-backups', help='Count of log files` backups to store (default %(default)d)',
+                       default=3)
+
+    group = parser.add_argument_group('Processing', 'Useful runtime configuration for ' + __package__)
+    m = group.add_mutually_exclusive_group()
+    m.add_argument('--loop', help='Run the script for indefinite amount of time', default=False, action='store_true')
+    m.add_argument('-q', help='Terminate right after saving all required data to keyring', default=False,
+                   action='store_true')
+    group.add_argument('--delay', help='Delay in seconds between iterations (only with --loop, default %(default)d)',
+                       default=60)
+    group.add_argument('--debug', help='Enable debug logging', action='store_true', default=False)
+    group.add_argument('-v', '--verbose', help='Enable logging from plexapi', action='store_true', default=False)
+    group.add_argument('-i', '--insecure', help='Store your password with minimal encryption, without requiring'
+                                                'additional password (useful when running headless on some strange '
+                                                'devices like WD My Passport Wireless Pro)',
+                       default=False, action='store_true')
+
+    group = parser.add_argument_group('Downloading', 'Download settings')
+    group.add_argument('-d', '--destination', help='Download destination (default "%(default)s")', default=os.getcwd())
+    group.add_argument('-w', '--mark-watched', help='Mark missing media as watched', action='store_true',
+                       default=False)
+    group.add_argument('-s', '--limit-disk-usage', help='Limit total downloaded files size (eg 1G, 100M, 10%%)')
+    group.add_argument('-r', '--resume-downloads', help='Allow to resume downloads (the result file may be broken)',
+                       action='store_true', default=False)
+    group.add_argument('--rate-limit', help='Limit bandwidth usage per second (e.g. 1M, 100K)')
+    group.add_argument('--skip', help='Name of the file (including parent directory, which is the sync name) to skip, '
+                                      'may be used multiple times', action='append', default=[])
 
     return parser.parse_args()
 
