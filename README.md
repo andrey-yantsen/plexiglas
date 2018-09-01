@@ -16,9 +16,9 @@ of Plex set up. But now, with plexiglas, you can easily have multiple servers wi
         * [X] Run and able to download files
         * [X] Keyring is working
 * [X] Resume transfer
-* [ ] Simple downloading of original video for those, who don't have PlexPass. Please see [Plex Downloader](https://github.com/danstis/PlexDownloader) for now
+* [X] Simple downloading of original video for those, who don't have PlexPass. Please see [Plex Downloader](https://github.com/danstis/PlexDownloader) for now
     * [ ] With configurable transcoding
-    * [ ] Automatically remove watched videos
+    * [X] Automatically remove watched videos
 * [X] Mark missing videos as watched
 * [X] Limit bandwidth
 * [ ] Trailers downloading & converting to mp4
@@ -58,5 +58,14 @@ Following arguments are currently supported:
 * `--skip` — skip specified file from downloading, can be used multiple times. E.g. passing `Rewatch/The Butterfly Effect (2004).mp4`
     as an argument will skip the movie `The Butterfly Effect` from downloading to `sync` named `Rewatch`
 * `--subdir` — store each movie in subdirectory, so you can easily add extras (e.g. [trailers](https://github.com/andrey-yantsen/plexiglas/wiki/Downloading-trailers))
+* `--simple-sync-url` — download media from specific part of the library, you should enter argument value in format `URL [<COUNT> [<ALLOW_WATCHED>]]`, where items in square braces are optional, sample usage:
+    * Download 10 unwatched movies, sorted by year of release (all filters and sorting are set in Plex Web UI)
+    ```
+    --simple-sync-url https://app.plex.tv/desktop#!/server/607c8c938b50eef734456f8b9da94b5d02339ce5?key=%2Flibrary%2Fsections%2F1&typeKey=%2Flibrary%2Fsections%2F1%2Fall%3Ftype%3D1&save=1&limit=&sort=year%3Adesc 10
+    ```
+    * Download 5 oldest watched movies:
+    ```
+    --simple-sync-url http://example.com:32400/web/index.html#!/server/607c8c938b50eef734456f8b9da94b5d02339ce5?key=%2Flibrary%2Fsections%2F1&typeKey=%2Flibrary%2Fsections%2F1%2Fall%3Ftype%3D1&customFilter=1&save=1&sort=lastViewedAt&filters=unwatched%21%3D1 5 1
+    ```
 
 If you wouldn't provide a username and/or password the app will ask you to provide them in interactive mode

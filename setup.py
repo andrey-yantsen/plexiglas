@@ -54,6 +54,7 @@ setup(
         'console_scripts': ['plexiglas = plexiglas.cli:main'],
         'plexiglas.plugins': [
             'mobile_sync = plexiglas.mobile_sync',
+            'simple_sync = plexiglas.simple_sync',
         ],
     },
     classifiers=[
