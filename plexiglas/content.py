@@ -1,3 +1,5 @@
+from humanfriendly import format_size
+
 from . import db, log
 import os
 from .token_bucket import rate_limit as limit_bandwidth
@@ -23,17 +25,17 @@ def cleanup(plex, sync_type, required_media, opts):
                         key = '/:/scrobble?key=%s&identifier=com.plexapp.plugins.library' % row['media_id']
                         conn.query(key)
                         log.info('File %s not found, marking media as watched', media_path)
-                        db.remove_downloaded(row['machine_id'], row['sync_id'], row['media_id'])
+                        db.remove_downloaded(row['machine_id'], sync_type, row['sync_id'], row['media_id'])
                     else:
                         log.error('Unable to find server %s', row['machine_id'])
                 else:
                     log.error('File not found %s, removing it from the DB', media_path)
-                    db.remove_downloaded(row['machine_id'], row['sync_id'], row['media_id'])
+                    db.remove_downloaded(row['machine_id'], sync_type, row['sync_id'], row['media_id'])
         else:
             log.info('File is not required anymore %s', media_path)
             if os.path.isfile(media_path):
                 os.unlink(media_path)
-            db.remove_downloaded(row['machine_id'], row['sync_id'], row['media_id'])
+            db.remove_downloaded(row['machine_id'], sync_type, row['sync_id'], row['media_id'])
 
 
 def pretty_filename(media, part):
@@ -185,3 +187,59 @@ def download(url, token, session, filename, savepath=None, chunksize=4024,
         bar.close()
 
     return fullpath
+
+
+def download_media(plex, sync_title, media, part, opts, downloaded_callback):
+    log.debug('Checking media#%d %s', media.ratingKey, media.title)
+    filename = pretty_filename(media, part)
+    filename_tmp = filename + '.part'
+
+    savepath = os.path.join(opts.destination, sync_title)
+
+    if os.sep.join(os.path.join(savepath, filename).split(os.sep)[-2:]) in opts.skip:
+        log.info('Skipping file %s from %s due to cli arguments', filename, savepath)
+        return
+
+    if media.TYPE == 'movie' and opts.subdir:
+        savepath = os.path.join(savepath, os.path.splitext(filename)[0])
+
+    part_key = part.key
+    if part.decision == 'directplay':
+        part_key = '/' + '/'.join(part_key.split('/')[3:])
+    url = part._server.url(part_key)
+    log.info('Downloading %s to %s, file size is %s', filename, savepath, format_size(part.size, binary=True))
+    makedirs(savepath, exist_ok=True)
+
+    path = os.path.join(savepath, filename)
+    path_tmp = os.path.join(savepath, filename_tmp)
+
+    if not opts.resume_downloads and os.path.isfile(path_tmp) and os.path.getsize(path_tmp) != part.size:
+        os.unlink(path_tmp)
+
+    if os.path.isfile(path_tmp) and os.path.getsize(path_tmp) > part.size:
+        log.error('File "%s" has an unexpected size (actual: %d, expected: %d), removing it', path_tmp,
+                  os.path.getsize(path_tmp), part.size)
+        os.unlink(path_tmp)
+
+    with open(path_tmp, 'wt') as f:
+        f.write(url)
+
+    """
+    if not os.path.isfile(path_tmp) or os.path.getsize(path_tmp) != part.size:
+        try:
+            download(url, token=plex.authenticationToken, session=media._server._session, filename=filename_tmp,
+                     savepath=savepath, showstatus=True, rate_limit=opts.rate_limit)
+        except BaseException:  # handle all exceptions, anyway we'll re-raise them
+            if os.path.isfile(path_tmp) and os.path.getsize(path_tmp) != part.size and not opts.resume_downloads:
+                os.unlink(path_tmp)
+            raise
+
+    if not os.path.isfile(path_tmp) or os.path.getsize(path_tmp) != part.size:
+        log.error('File "%s" has an unexpected size (actual: %d, expected: %d)', path_tmp,
+                  os.path.getsize(path_tmp), part.size)
+        raise ValueError('Downloaded file size is not the same as expected')
+    """
+
+    downloaded_callback(media, part, filename)
+
+    os.rename(path_tmp, path)

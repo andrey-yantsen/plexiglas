@@ -29,11 +29,11 @@ class PlexiglasPlugin:
     You can implement following classmethods to work with the workflow:
 
     Bootstrap:
-        def register_options(parser)
-        def process_options(opts)
+        def register_options(cls, parser)
+        def process_options(cls, opts)
 
-    Syncronization:
-        def sync(plex, opts)
+    Synchronization:
+        def sync(cls, plex, opts): list
     """
 
     @abc.abstractproperty
@@ -111,4 +111,5 @@ def get_all_plugins():
 
     all_classes = PlexiglasPlugin._classes
     viable_classes = filter(is_class_viable, all_classes)
-    return list(sorted(suppress_exceptions(viable_classes, exceptions=TypeError), key=lambda x: x.priority))
+    return list(sorted(suppress_exceptions(viable_classes, exceptions=TypeError), key=lambda x: x.priority,
+                       reverse=True))

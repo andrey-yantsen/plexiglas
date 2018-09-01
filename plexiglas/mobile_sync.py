@@ -1,12 +1,10 @@
 from collections import defaultdict
 from itertools import groupby
 from operator import itemgetter
-import os
-from humanfriendly import format_size
 from keyring.util import properties
 
 from . import log, db
-from .content import pretty_filename, get_available_disk_space
+from .content import get_available_disk_space, download_media
 from .plugin import PlexiglasPlugin
 
 
@@ -21,60 +19,6 @@ class MobileSync(PlexiglasPlugin):
         for part in media.iterParts():
             if part.syncItemId == sync_item.id and part.syncState == 'processed':
                 return part
-
-    @classmethod
-    def download_media(cls, plex, sync_item, media, part, opts):
-        from .content import makedirs, download
-
-        log.debug('Checking media#%d %s', media.ratingKey, media.title)
-        filename = pretty_filename(media, part)
-        filename_tmp = filename + '.part'
-
-        savepath = os.path.join(opts.destination, sync_item.title)
-
-        if os.sep.join(os.path.join(savepath, filename).split(os.sep)[-2:]) in opts.skip:
-            log.info('Skipping file %s from %s due to cli arguments', filename, savepath)
-            return
-
-        if media.TYPE == 'movie' and opts.subdir:
-            savepath = os.path.join(savepath, os.path.splitext(filename)[0])
-
-        part_key = part.key
-        if part.decision == 'directplay':
-            part_key = '/' + '/'.join(part_key.split('/')[3:])
-        url = part._server.url(part_key)
-        log.info('Downloading %s to %s, file size is %s', filename, savepath, format_size(part.size, binary=True))
-        makedirs(savepath, exist_ok=True)
-
-        path = os.path.join(savepath, filename)
-        path_tmp = os.path.join(savepath, filename_tmp)
-
-        if not opts.resume_downloads and os.path.isfile(path_tmp) and os.path.getsize(path_tmp) != part.size:
-            os.unlink(path_tmp)
-
-        if os.path.isfile(path_tmp) and os.path.getsize(path_tmp) > part.size:
-            log.error('File "%s" has an unexpected size (actual: %d, expected: %d), removing it', path_tmp,
-                      os.path.getsize(path_tmp), part.size)
-            os.unlink(path_tmp)
-
-        if not os.path.isfile(path_tmp) or os.path.getsize(path_tmp) != part.size:
-            try:
-                download(url, token=plex.authenticationToken, session=media._server._session, filename=filename_tmp,
-                         savepath=savepath, showstatus=True, rate_limit=opts.rate_limit)
-            except BaseException:  # handle all exceptions, anyway we'll re-raise them
-                if os.path.isfile(path_tmp) and os.path.getsize(path_tmp) != part.size and not opts.resume_downloads:
-                    os.unlink(path_tmp)
-                raise
-
-        if not os.path.isfile(path_tmp) or os.path.getsize(path_tmp) != part.size:
-            log.error('File "%s" has an unexpected size (actual: %d, expected: %d)', path_tmp,
-                      os.path.getsize(path_tmp), part.size)
-            raise ValueError('Downloaded file size is not the same as expected')
-
-        db.mark_downloaded(sync_item, media, part.size, filename)
-        sync_item.markDownloaded(media)
-
-        os.rename(path_tmp, path)
 
     @classmethod
     def sync(cls, plex, opts):
@@ -117,7 +61,12 @@ class MobileSync(PlexiglasPlugin):
                         log.debug('Not downloading %s from %s, due to low available space', media.title, item.title)
                         continue
 
-                    cls.download_media(plex, item, media, part, opts)
+                    def mark_downloaded(media, part, filename):
+                        db.mark_downloaded(item.machineIdentifier, cls.name, item.id, item.title, media, part.size,
+                                           filename, sync_version=item.version)
+                        item.markDownloaded(media)
+
+                    download_media(plex, item.title, media, part, opts, mark_downloaded)
 
         if len(skipped_syncs):
             for machine_id, sync_infos in groupby(skipped_syncs, key=lambda item: item[0]):

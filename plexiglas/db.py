@@ -69,18 +69,19 @@ def get_client_uuid():
     return uuid
 
 
-def mark_downloaded(item, media, filesize, filename=None):
+def mark_downloaded(machine_id, sync_type, sync_id, sync_title, media, filesize, filename, sync_version=1):
     with _get_db() as conn:
-        log.debug('Marking as downloaded item#%d, media#%d', item.id, media.ratingKey)
+        log.debug('Marking as downloaded item#%s, media#%d', sync_id, media.ratingKey)
         cur = conn.cursor()
-        cur.execute('INSERT OR IGNORE INTO syncs (machine_id, sync_id, title) VALUES (?, ?, ?)',
-                    (item.machineIdentifier, item.id, item.title))
+        cur.execute('INSERT OR IGNORE INTO syncs (machine_id, sync_type, sync_id, title) VALUES (?, ?, ?, ?)',
+                    (machine_id, sync_type, sync_id, sync_title))
 
-        cur.execute('SELECT id FROM syncs WHERE machine_id = ? AND sync_id = ?', (item.machineIdentifier, item.id))
+        cur.execute('SELECT id FROM syncs WHERE machine_id = ? AND sync_type = ? AND sync_id = ?', (machine_id,
+                                                                                                    sync_type, sync_id))
         sync_id = cur.fetchone()[0]
         log.debug('SyncItem id in internal db %d', sync_id)
 
-        cur.execute('UPDATE syncs SET title = ?, version = ? WHERE id = ?', (item.title, item.version, sync_id))
+        cur.execute('UPDATE syncs SET title = ?, version = ? WHERE id = ?', (sync_title, sync_version, sync_id))
 
         cur.execute('INSERT OR IGNORE INTO items (sync_id, media_id, title, filename, media_type) VALUES '
                     '(?, ?, "", "", "")',
@@ -126,6 +127,15 @@ def get_downloaded_for_sync(machine_id, sync_type, sync_id):
                     'JOIN items i ON i.sync_id = s.id '
                     'WHERE i.downloaded = 1 AND s.machine_id = ? AND s.sync_type = ? '
                     'AND s.sync_id IN (%s)' % (','.join('?'*len(sync_id)), ), params)
+        return cur.fetchall()
+
+
+def get_downloaded_for_sync_type(machine_id, sync_type):
+    with _get_db() as conn:
+        cur = conn.cursor()
+        cur.execute('SELECT i.id, s.machine_id, s.sync_id, i.media_id, s.title, i.media_type, i.filename FROM syncs s '
+                    'JOIN items i ON i.sync_id = s.id '
+                    'WHERE i.downloaded = 1 AND s.machine_id = ? AND s.sync_type = ?', (machine_id, sync_type))
         return cur.fetchall()
 
 

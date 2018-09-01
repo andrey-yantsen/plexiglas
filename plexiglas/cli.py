@@ -131,7 +131,7 @@ def parse_arguments():
     group.add_argument('--log-file-max-size', help='Maximum log file size in bytes (default %(default)s)',
                        default='1M')
     group.add_argument('--log-file-backups', help='Count of log files` backups to store (default %(default)d)',
-                       default=3)
+                       default=3, type=int, metavar='int')
 
     group = parser.add_argument_group('Processing', 'Useful runtime configuration for ' + __package__)
     m = group.add_mutually_exclusive_group()
@@ -139,7 +139,7 @@ def parse_arguments():
     m.add_argument('-q', help='Terminate right after saving all required data to keyring', default=False,
                    action='store_true')
     group.add_argument('--delay', help='Delay in seconds between iterations (only with --loop, default %(default)d)',
-                       default=60)
+                       default=60, type=int, metavar='int')
     group.add_argument('--debug', help='Enable debug logging', action='store_true', default=False)
     group.add_argument('-v', '--verbose', help='Enable logging from plexapi', action='store_true', default=False)
     group.add_argument('-i', '--insecure', help='Store your password with minimal encryption, without requiring'
