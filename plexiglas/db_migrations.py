@@ -66,4 +66,5 @@ def apply_migration_2(conn):
         );
         INSERT INTO syncs SELECT id, machine_id, '%s', sync_id, title, version FROM tmp_syncs;
         CREATE UNIQUE INDEX uidx_syncs_machine_id_sync_type_sync_id ON syncs(machine_id, sync_type, sync_id);
+        DROP TABLE tmp_syncs;
     """ % (MobileSync.name, ))
