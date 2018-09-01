@@ -221,10 +221,6 @@ def download_media(plex, sync_title, media, part, opts, downloaded_callback):
                   os.path.getsize(path_tmp), part.size)
         os.unlink(path_tmp)
 
-    with open(path_tmp, 'wt') as f:
-        f.write(url)
-
-    """
     if not os.path.isfile(path_tmp) or os.path.getsize(path_tmp) != part.size:
         try:
             download(url, token=plex.authenticationToken, session=media._server._session, filename=filename_tmp,
@@ -238,7 +234,6 @@ def download_media(plex, sync_title, media, part, opts, downloaded_callback):
         log.error('File "%s" has an unexpected size (actual: %d, expected: %d)', path_tmp,
                   os.path.getsize(path_tmp), part.size)
         raise ValueError('Downloaded file size is not the same as expected')
-    """
 
     downloaded_callback(media, part, filename)
 
