@@ -3,36 +3,37 @@ import os
 from .token_bucket import rate_limit as limit_bandwidth
 
 
-def cleanup(plex, required_media, sync_list_without_changes, opts):
-    for (db_item_id, machine_id, sync_id, media_id, sync_title, media_type, media_filename) in db.get_all_downloaded():
-        if media_type == 'movie' and opts.subdir:
-            media_path = os.path.join(opts.destination, sync_title, os.path.splitext(media_filename)[0], media_filename)
+def cleanup(plex, sync_type, required_media, opts):
+    for row in db.get_all_downloaded(sync_type):
+        if row['media_type'] == 'movie' and opts.subdir:
+            media_path = os.path.join(opts.destination, row['sync_title'], os.path.splitext(row['media_filename'])[0],
+                                      row['media_filename'])
         else:
-            media_path = os.path.join(opts.destination, sync_title, media_filename)
-        if (machine_id, media_id) in required_media or (machine_id, sync_id) in sync_list_without_changes:
+            media_path = os.path.join(opts.destination, row['sync_title'], row['media_filename'])
+        if (row['machine_id'], row['media_id']) in required_media:
             if not os.path.isfile(media_path):
                 if opts.mark_watched:
                     conn = None
                     for res in plex.resources():
-                        if res.clientIdentifier == machine_id:
+                        if res.clientIdentifier == row['machine_id']:
                             conn = res.connect()
                             break
 
                     if conn:
-                        key = '/:/scrobble?key=%s&identifier=com.plexapp.plugins.library' % media_id
+                        key = '/:/scrobble?key=%s&identifier=com.plexapp.plugins.library' % row['media_id']
                         conn.query(key)
                         log.info('File %s not found, marking media as watched', media_path)
-                        db.remove_downloaded(machine_id, sync_id, media_id)
+                        db.remove_downloaded(row['machine_id'], row['sync_id'], row['media_id'])
                     else:
-                        log.error('Unable to find server %s', machine_id)
+                        log.error('Unable to find server %s', row['machine_id'])
                 else:
                     log.error('File not found %s, removing it from the DB', media_path)
-                    db.remove_downloaded(machine_id, sync_id, media_id)
+                    db.remove_downloaded(row['machine_id'], row['sync_id'], row['media_id'])
         else:
             log.info('File is not required anymore %s', media_path)
             if os.path.isfile(media_path):
                 os.unlink(media_path)
-            db.remove_downloaded(machine_id, sync_id, media_id)
+            db.remove_downloaded(row['machine_id'], row['sync_id'], row['media_id'])
 
 
 def pretty_filename(media, part):

@@ -6,6 +6,7 @@ from time import sleep
 import humanfriendly as hf
 
 from . import log, keyring, set_keyring
+from .plugin import get_all_plugins
 
 
 def process_opts(opts):
@@ -75,6 +76,11 @@ def process_opts(opts):
 
     if opts.rate_limit and not opts.rate_limit.isdigit():
         opts.rate_limit = hf.parse_size(opts.rate_limit, binary=True)
+
+    for plugin in get_all_plugins():
+        if hasattr(plugin, 'process_options'):
+            log.debug('Running process_options on %s', plugin.name)
+            plugin.process_options(opts)
 
 
 def init_logging(opts):
@@ -157,6 +163,11 @@ def parse_arguments():
                                         'should move them to appropriate folders by yourself!', action='store_true',
                        default=False)
 
+    for plugin in get_all_plugins():
+        if hasattr(plugin, 'register_options'):
+            log.debug('Running register_options on %s', plugin.name)
+            plugin.register_options(parser)
+
     return parser.parse_args()
 
 
@@ -181,7 +192,6 @@ def confirm(prompt, default=False):
 def main():
     from .plex import get_plex_client
     from .content import cleanup
-    from . import plexsync
     from . import db
     from requests import exceptions
 
@@ -224,8 +234,11 @@ def main():
 
             try:
                 plex = get_plex_client(opts)
-                required_media, sync_list_without_changes = plexsync.sync(plex, opts)
-                cleanup(plex, required_media, sync_list_without_changes, opts)
+                for plugin in get_all_plugins():
+                    if hasattr(plugin, 'sync'):
+                        log.debug('Running sync on %s', plugin.name)
+                        required_media = plugin.sync(plex, opts)
+                        cleanup(plex, plugin.name, required_media, opts)
             except exceptions.RequestException:
                 if stop:
                     raise

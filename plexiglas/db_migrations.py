@@ -1,10 +1,4 @@
 def apply_migration_0(conn):
-    """
-
-    :param conn:
-    :type conn: sqlite3.Connection
-    """
-
     cur = conn.cursor()
     init_required = False
 
@@ -50,13 +44,26 @@ def apply_migration_0(conn):
 
 
 def apply_migration_1(conn):
-    """
-
-    :param conn:
-    :type conn: sqlite3.Connection
-    """
-
     conn.executescript("""
         DROP INDEX idx_items_downloaded;
         CREATE INDEX IF NOT EXISTS idx_items_downloaded_media_type ON items(downloaded, media_type)
     """)
+
+
+def apply_migration_2(conn):
+    from .mobile_sync import MobileSync
+
+    conn.executescript("""
+        CREATE TABLE tmp_syncs AS SELECT * FROM syncs;
+        DROP TABLE syncs;
+        CREATE TABLE IF NOT EXISTS syncs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            machine_id varchar(255) not null,
+            sync_type VARCHAR(50) NOT NULL,
+            sync_id VARCHAR(255) NOT NULL,
+            title varchar(255) not null,
+            version integer not null default 1
+        );
+        INSERT INTO syncs SELECT id, machine_id, '%s', sync_id, title, version FROM tmp_syncs;
+        CREATE UNIQUE INDEX uidx_syncs_machine_id_sync_type_sync_id ON syncs(machine_id, sync_type, sync_id);
+    """ % (MobileSync.name, ))

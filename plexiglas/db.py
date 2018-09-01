@@ -1,10 +1,9 @@
 import sqlite3
 from contextlib import contextmanager
 from uuid import uuid4
-from . import log
-import db_migrations
+from . import log, db_migrations
 
-CURRENT_VERSION = 2
+CURRENT_VERSION = 3
 _skip_migrations = False
 
 
@@ -20,12 +19,6 @@ def _get_db():
 
 
 def apply_migrations(conn):
-    """
-
-    :param conn:
-    :type conn: sqlite3.Connection
-    """
-
     global _skip_migrations
 
     if _skip_migrations:
@@ -77,17 +70,6 @@ def get_client_uuid():
 
 
 def mark_downloaded(item, media, filesize, filename=None):
-    """
-
-    :param item:
-    :type item: plexapi.sync.SyncItem
-    :param media:
-    :type media: plexapi.base.Playable
-    :param filesize:
-    :type filesize: int
-    :param filename:
-    :return:
-    """
     with _get_db() as conn:
         log.debug('Marking as downloaded item#%d, media#%d', item.id, media.ratingKey)
         cur = conn.cursor()
@@ -114,29 +96,36 @@ def mark_downloaded(item, media, filesize, filename=None):
         conn.commit()
 
 
-def remove_downloaded(machine_id, sync_id, media_id):
-    """
-
-    :param machine_id:
-    :type machine_id: str
-    :param sync_id:
-    :type sync_id: int
-    :param media_id:
-    :type media_id: int
-    :return:
-    """
+def remove_downloaded(machine_id, sync_type, sync_id, media_id):
     with _get_db() as conn:
         conn.execute('DELETE FROM items WHERE media_id = ? AND '
-                     'sync_id = (SELECT id FROM syncs WHERE machine_id = ? AND sync_id = ?)', (media_id, machine_id,
-                                                                                               sync_id))
+                     'sync_id = (SELECT id FROM syncs WHERE machine_id = ? AND sync_type = ? AND sync_id = ?)',
+                     (media_id, machine_id, sync_type, sync_id))
         conn.commit()
 
 
-def get_all_downloaded():
+def get_all_downloaded(sync_type):
     with _get_db() as conn:
         cur = conn.cursor()
+        cur.execute('SELECT i.id, s.machine_id, s.sync_type, s.sync_id, i.media_id, s.title as sync_title, '
+                    'i.media_type, i.filename as media_filename '
+                    'FROM syncs s '
+                    'JOIN items i ON i.sync_id = s.id '
+                    'WHERE i.downloaded = 1 AND s.sync_type = ?', (sync_type, ))
+        return cur.fetchall()
+
+
+def get_downloaded_for_sync(machine_id, sync_type, sync_id):
+    if type(sync_id) is not list:
+        sync_id = [sync_id]
+
+    with _get_db() as conn:
+        cur = conn.cursor()
+        params = (machine_id, sync_type) + tuple(sync_id)
         cur.execute('SELECT i.id, s.machine_id, s.sync_id, i.media_id, s.title, i.media_type, i.filename FROM syncs s '
-                    'JOIN items i ON i.sync_id = s.id WHERE i.downloaded = 1')
+                    'JOIN items i ON i.sync_id = s.id '
+                    'WHERE i.downloaded = 1 AND s.machine_id = ? AND s.sync_type = ? '
+                    'AND s.sync_id IN (%s)' % (','.join('?'*len(sync_id)), ), params)
         return cur.fetchall()
 
 

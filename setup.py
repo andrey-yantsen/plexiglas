@@ -50,7 +50,12 @@ setup(
     long_description_content_type='text/markdown',
     install_requires=requirements,
     dependency_links=dependency_links,
-    entry_points={'console_scripts': ['plexiglas = plexiglas.cli:main']},
+    entry_points={
+        'console_scripts': ['plexiglas = plexiglas.cli:main'],
+        'plexiglas.plugins': [
+            'mobile_sync = plexiglas.mobile_sync',
+        ],
+    },
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Intended Audience :: Developers',
