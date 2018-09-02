@@ -24,7 +24,14 @@ of Plex set up. But now, with plexiglas, you can easily have multiple servers wi
 * [X] Limit bandwidth
 * [ ] Trailers downloading & converting to mp4
 * [ ] Confirmed working with audio
+    * [ ] mobile sync
+    * [ ] simple sync
 * [ ] Confirmed working with photo
+    * [ ] mobile sync
+    * [ ] simple sync
+* [ ] Confirmed working with playlists
+    * [ ] mobile sync
+    * [ ] simple sync
 
 ## Installation
 
