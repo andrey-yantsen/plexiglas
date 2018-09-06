@@ -25,6 +25,7 @@ jobs:
         - pip install --upgrade pip setuptools
       script:
         - .travis/prepare_deploy.sh
+        - python setup.py sdist
       deploy:
         - provider: pypi
           user: andrey_yantsen
