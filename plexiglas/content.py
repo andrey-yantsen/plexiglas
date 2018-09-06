@@ -197,19 +197,23 @@ def download(url, token, session, filename, savepath=None, chunksize=4024,
     return fullpath
 
 
+def sanitize_filename(filename):
+    return filename.replace('/', '_')
+
+
 def download_media(plex, sync_title, media, part, opts, downloaded_callback):
     log.debug('Checking media#%d %s', media.ratingKey, media.title)
-    filename = pretty_filename(media, part)
+    filename = sanitize_filename(pretty_filename(media, part))
     filename_tmp = filename + '.part'
 
-    savepath = os.path.join(opts.destination, sync_title)
+    savepath = os.path.join(opts.destination, sanitize_filename(sync_title))
 
     if os.sep.join(os.path.join(savepath, filename).split(os.sep)[-2:]) in opts.skip:
         log.info('Skipping file %s from %s due to cli arguments', filename, savepath)
         return
 
     if media.TYPE == 'movie' and opts.subdir:
-        savepath = os.path.join(savepath, os.path.splitext(filename)[0])
+        savepath = os.path.join(savepath, sanitize_filename(os.path.splitext(filename)[0]))
 
     part_key = part.key
     if part.decision == 'directplay':
