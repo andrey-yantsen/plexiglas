@@ -1,8 +1,9 @@
-from humanfriendly import format_size
+from humanfriendly import format_size, format_timespan
 
 from . import db, log
 import os
 from .token_bucket import rate_limit as limit_bandwidth
+from time import time
 
 
 def cleanup(plex, sync_type, required_media, opts):
@@ -139,9 +140,14 @@ def download(url, token, session, filename, savepath=None, chunksize=4024,
                     self.total = total
                     self.desc = desc
                     self.pos = initial
-                    self.last_report = ''
+                    self.last_report_str = ''
+                    self._last_report_ts = 0
+                    self._min_report_interval = int(kwargs.pop('min_report_interval', 20))
+                    self._begin = None
 
                 def update(self, l):
+                    if self._begin is None:
+                        self._begin = time()
                     self.pos += l
                     progress = floor(self.pos) / self.total * 100
                     if progress < 99:
@@ -149,8 +155,9 @@ def download(url, token, session, filename, savepath=None, chunksize=4024,
                     else:
                         progress = floor(progress)
                     report = '%s downloaded %d%%' % (self.desc, progress)
-                    if self.last_report != report:
-                        self.last_report = report
+                    if self.last_report_str != report and time() - self._last_report_ts >= self._min_report_interval:
+                        self.last_report_str = report
+                        self._last_report_ts = time()
 
                         appendix = ' (%s out of %s)' % (format_size(self.pos, binary=True),
                                                         format_size(self.total, binary=True))
@@ -158,7 +165,8 @@ def download(url, token, session, filename, savepath=None, chunksize=4024,
                         log.info(report + appendix)
 
                 def close(self):
-                    pass
+                    report = '%s download complete after %s' % (self.desc, format_timespan(time() - self._begin))
+                    log.info(report)
 
         total = int(response.headers.get('content-length', 0))
         initial = 0
