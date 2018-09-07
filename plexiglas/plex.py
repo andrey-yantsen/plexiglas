@@ -55,8 +55,6 @@ def get_plex_client(opts):
 
     plex = None
 
-    log.info('Logging to myplex with username %s', opts.username)
-
     token = keyring.get_password('plexiglas', 'token_' + opts.username)
     if opts.username and opts.password:
         log.debug('Password-based')

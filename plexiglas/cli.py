@@ -211,6 +211,8 @@ def main():
         get_plex_client(opts)
         exit(0)
 
+    log.info('Using myplex with username %s', opts.username)
+
     last_reported_du = None
 
     stop = False
