@@ -27,20 +27,20 @@ jobs:
         - .travis/prepare_deploy.sh
         - python setup.py sdist
       deploy:
-        - provider: pypi
-          user: andrey_yantsen
-          password: $PYPI_PASSWORD
-          skip_cleanup: true
-          distributions: sdist bdist_wheel
-          on:
-            tags: true
-            repo: andrey-yantsen/plexiglas
         - provider: releases
           api_key: $GITHUB_OAUTH_TOKEN
           skip_cleanup: true
           file_glob: true
           file: "dist/*"
           prerelease: true
+          on:
+            tags: true
+            repo: andrey-yantsen/plexiglas
+        - provider: pypi
+          user: andrey_yantsen
+          password: $PYPI_PASSWORD
+          skip_cleanup: true
+          distributions: sdist bdist_wheel
           on:
             tags: true
             repo: andrey-yantsen/plexiglas
