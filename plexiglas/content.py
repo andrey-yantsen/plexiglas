@@ -1,9 +1,8 @@
-from humanfriendly import format_size, format_timespan
+from humanfriendly import format_size
 
 from . import db, log
 import os
 from .token_bucket import rate_limit as limit_bandwidth
-from time import time
 
 
 def cleanup(plex, sync_type, required_media, opts):
@@ -126,47 +125,9 @@ def download(url, token, session, filename, savepath=None, chunksize=4024,
         file_mode = 'wb'
 
     # save the file to disk
-    if showstatus:  # pragma: no cover
-        import sys
-
-        if sys.stderr.isatty():
-            from tqdm import tqdm
-        else:
-            from humanfriendly import format_size
-            from math import floor
-
-            class tqdm:
-                def __init__(self, total, desc, initial, **kwargs):
-                    self.total = total
-                    self.desc = desc
-                    self.pos = initial
-                    self.last_report_str = ''
-                    self._last_report_ts = 0
-                    self._min_report_interval = int(kwargs.pop('min_report_interval', 20))
-                    self._begin = None
-
-                def update(self, l):
-                    if self._begin is None:
-                        self._begin = time()
-                    self.pos += l
-                    progress = floor(self.pos) / self.total * 100
-                    if progress < 99:
-                        progress = round(progress)
-                    else:
-                        progress = floor(progress)
-                    report = '%s downloaded %d%%' % (self.desc, progress)
-                    if self.last_report_str != report and time() - self._last_report_ts >= self._min_report_interval:
-                        self.last_report_str = report
-                        self._last_report_ts = time()
-
-                        appendix = ' (%s out of %s)' % (format_size(self.pos, binary=True),
-                                                        format_size(self.total, binary=True))
-
-                        log.info(report + appendix)
-
-                def close(self):
-                    report = '%s download complete after %s' % (self.desc, format_timespan(time() - self._begin))
-                    log.info(report)
+    bar = None
+    if showstatus:
+        from .tqdm_stub import tqdm
 
         total = int(response.headers.get('content-length', 0))
         initial = 0
@@ -188,10 +149,10 @@ def download(url, token, session, filename, savepath=None, chunksize=4024,
 
         for chunk in iter_content:
             handle.write(chunk)
-            if showstatus:
+            if bar:
                 bar.update(len(chunk))
 
-    if showstatus:  # pragma: no cover
+    if bar:
         bar.close()
 
     return fullpath
