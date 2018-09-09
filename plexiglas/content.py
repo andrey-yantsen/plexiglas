@@ -22,9 +22,10 @@ def cleanup(plex, sync_type, required_media, opts):
                             break
 
                     if conn:
-                        key = '/:/scrobble?key=%s&identifier=com.plexapp.plugins.library' % row['media_id']
-                        conn.query(key)
                         log.info('File %s not found, marking media as watched', media_path)
+                        item = conn.fetchItem(int(row['media_id']))
+                        if hasattr(item, 'markWatched'):
+                            item.markWatched()
                         db.remove_downloaded(row['machine_id'], sync_type, row['sync_id'], row['media_id'])
                     else:
                         log.error('Unable to find server %s', row['machine_id'])
