@@ -36,13 +36,10 @@ of Plex set up. But now, with plexiglas, you can easily have multiple servers wi
 ## Installation
 
 ```
-pip install --process-dependency-links plexiglas
+pip install plexiglas
 ```
 
 (sudo may be required)
-
-Option `--process-dependency-links` is a temporary requirement, while plexapi doesn't have sync api
-support, the patch with complete it's support is in progress.
 
 If you'll receive an error like `AttributeError: 'MyPlexAccount' object has no attribute 'syncItems'`
 it means that you already have PlexAPI installed, but without my changes, to fix this please execute
@@ -50,7 +47,7 @@ following commands:
 
 ```
 pip uninstall plexapi
-pip install https://github.com/andrey-yantsen/python-plexapi/tarball/sync
+pip install 'plexapi>=3.1.0'
 ```
 
 

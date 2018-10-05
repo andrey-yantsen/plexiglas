@@ -7,7 +7,7 @@ name = "pypi"
 tqdm = "*"
 "keyrings.cryptfile" = "*"
 keyring = "*"
-plexapi = {editable = true, ref = "sync", git = "https://github.com/andrey-yantsen/python-plexapi.git"}
+plexapi = "*"
 humanfriendly = "*"
 six = "*"
 

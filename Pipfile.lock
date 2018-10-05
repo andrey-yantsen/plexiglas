@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "a04945ba26932af7ca2e6e76795c0e65ea889b1b3fe428c1c0937d8d96fb67c8"
+            "sha256": "ab9d4ce071bb92d98376808fbb032f3244ba2acf27b80173d32a58d405a4ce2a"
         },
         "pipfile-spec": 6,
         "requires": {},
@@ -127,11 +127,11 @@
         },
         "keyring": {
             "hashes": [
-                "sha256:6364bb8c233f28538df4928576f4e051229e0451651073ab20b315488da16a58",
-                "sha256:6e01954fd3e404820e1fade262ee661974051551ed08c899ffc5e88bb9df288e"
+                "sha256:16dddc3edaeb2703aaf5588a0b488b62f162e26f1877b6faf3a3db4b7712df61",
+                "sha256:6232b972dfbd44fd9bd649242dbf17f616988b152d4268f9ca1dcc704b467381"
             ],
             "index": "pypi",
-            "version": "==13.2.1"
+            "version": "==15.1.0"
         },
         "keyrings.cryptfile": {
             "hashes": [
@@ -149,15 +149,18 @@
             "version": "==1.5"
         },
         "plexapi": {
-            "editable": true,
-            "git": "https://github.com/andrey-yantsen/python-plexapi.git",
-            "ref": "9383ed0e4ac94b6b7030f71cbdf10c17b72b923f"
+            "hashes": [
+                "sha256:4044876f354b6b93737f704e41910c5a5537e000ad9d4dc79b4ded7bc9e9ce4d"
+            ],
+            "index": "pypi",
+            "version": "==3.1.0"
         },
         "pycparser": {
             "hashes": [
-                "sha256:99a8ca03e29851d96616ad0404b4aad7d9ee16f25c9f9708a11faf2810f7b226"
+                "sha256:a988718abfad80b6b157acce7bf130a30876d27603738ac39f140993246b25b3"
             ],
-            "version": "==2.18"
+            "markers": "python_version >= '2.7' and python_version != '3.0.*' and python_version != '3.1.*' and python_version != '3.2.*' and python_version != '3.3.*'",
+            "version": "==2.19"
         },
         "pycryptodome": {
             "hashes": [
@@ -211,11 +214,11 @@
         },
         "tqdm": {
             "hashes": [
-                "sha256:5ef526702c0d265d5a960a3b27f3971fac13c26cf0fb819294bfa71fc6026c88",
-                "sha256:a3364bd83ce4777320b862e3c8a93d7da91e20a95f06ef79bed7dd71c654cafa"
+                "sha256:18f1818ce951aeb9ea162ae1098b43f583f7d057b34d706f66939353d1208889",
+                "sha256:df02c0650160986bac0218bb07952245fc6960d23654648b5d5526ad5a4128c9"
             ],
             "index": "pypi",
-            "version": "==4.25.0"
+            "version": "==4.26.0"
         },
         "urllib3": {
             "hashes": [
@@ -227,10 +230,10 @@
         },
         "websocket-client": {
             "hashes": [
-                "sha256:030bbfbf29ac9e315ffb207ed5ed42b6981b5038ea00d1e13b02b872cc95e8f6",
-                "sha256:a35bac3d9647c62c1ba3e8a7340385d92981f5486b033557d592138fd4b21b90"
+                "sha256:c42b71b68f9ef151433d6dcc6a7cb98ac72d2ad1e3a74981ca22bc5d9134f166",
+                "sha256:f5889b1d0a994258cfcbc8f2dc3e457f6fc7b32a8d74873033d12e4eab4bdf63"
             ],
-            "version": "==0.51.0"
+            "version": "==0.53.0"
         }
     },
     "develop": {
