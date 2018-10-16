@@ -8,11 +8,19 @@ from .token_bucket import rate_limit as limit_bandwidth
 
 def cleanup(plex, sync_type, required_media, opts):
     for row in db.get_all_downloaded(sync_type):
+        sync_title = row['sync_title']
+        if '#' in sync_title:
+            sync_title, _ = sync_title.split('#', 1)
+            sync_title = sync_title.strip()
+
+        sync_title = sanitize_filename(sync_title)
+        row['media_filename'] = sanitize_filename(row['media_filename'])
+
         if row['media_type'] == 'movie' and opts.subdir:
-            media_path = os.path.join(opts.destination, row['sync_title'], os.path.splitext(row['media_filename'])[0],
+            media_path = os.path.join(opts.destination, sync_title, os.path.splitext(row['media_filename'])[0],
                                       row['media_filename'])
         else:
-            media_path = os.path.join(opts.destination, row['sync_title'], row['media_filename'])
+            media_path = os.path.join(opts.destination, sync_title, row['media_filename'])
         if (row['machine_id'], row['media_id']) in required_media:
             if not os.path.isfile(media_path):
                 if opts.mark_watched:
@@ -172,6 +180,10 @@ def download_media(plex, sync_title, media, part, opts, downloaded_callback):
     log.debug('Checking media#%d %s', media.ratingKey, media.title)
     filename = sanitize_filename(pretty_filename(media, part))
     filename_tmp = filename + '.part'
+
+    if '#' in sync_title:
+        sync_title, _ = sync_title.split('#', 1)
+        sync_title = sync_title.strip()
 
     savepath = os.path.join(opts.destination, sanitize_filename(sync_title))
 
