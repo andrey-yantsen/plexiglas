@@ -1,4 +1,5 @@
 from humanfriendly import format_size
+from plexapi.exceptions import BadRequest
 
 from . import db, log
 import os
@@ -23,9 +24,13 @@ def cleanup(plex, sync_type, required_media, opts):
 
                     if conn:
                         log.info('File %s not found, marking media as watched', media_path)
-                        item = conn.fetchItem(int(row['media_id']))
-                        if hasattr(item, 'markWatched'):
-                            item.markWatched()
+                        try:
+                            item = conn.fetchItem(int(row['media_id']))
+                            if hasattr(item, 'markWatched'):
+                                item.markWatched()
+                        except BadRequest as e:
+                            if 'not_found' not in str(e):
+                                raise
                         db.remove_downloaded(row['machine_id'], sync_type, row['sync_id'], row['media_id'])
                     else:
                         log.error('Unable to find server %s', row['machine_id'])
