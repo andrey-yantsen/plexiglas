@@ -23,15 +23,20 @@ of Plex set up. But now, with plexiglas, you can easily have multiple servers wi
 * [X] Mark missing videos as watched
 * [X] Limit bandwidth
 * [ ] Trailers downloading & converting to mp4
+* [X] Confirmed working with Movies & TV-Shows
+    * [X] mobile sync
+    * [X] simple sync
 * [ ] Confirmed working with audio
-    * [ ] mobile sync
+    * [X] mobile sync
     * [ ] simple sync
 * [ ] Confirmed working with photo
-    * [ ] mobile sync
+    * [X] mobile sync
     * [ ] simple sync
 * [ ] Confirmed working with playlists
-    * [ ] mobile sync
+    * [X] mobile sync
     * [ ] simple sync
+* [ ] --subdir as plugin
+* [ ] Sync watching position
 
 ## Installation
 
