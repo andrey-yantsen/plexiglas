@@ -14,13 +14,12 @@ def cleanup(plex, sync_type, required_media, opts):
             sync_title = sync_title.strip()
 
         sync_title = sanitize_filename(sync_title)
-        row['media_filename'] = sanitize_filename(row['media_filename'])
+        media_filename = sanitize_filename(row['media_filename'])
 
         if row['media_type'] == 'movie' and opts.subdir:
-            media_path = os.path.join(opts.destination, sync_title, os.path.splitext(row['media_filename'])[0],
-                                      row['media_filename'])
+            media_path = os.path.join(opts.destination, sync_title, os.path.splitext(media_filename)[0], media_filename)
         else:
-            media_path = os.path.join(opts.destination, sync_title, row['media_filename'])
+            media_path = os.path.join(opts.destination, sync_title, media_filename)
         if (row['machine_id'], row['media_id']) in required_media:
             if not os.path.isfile(media_path):
                 if opts.mark_watched:
