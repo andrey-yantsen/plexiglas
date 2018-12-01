@@ -162,7 +162,7 @@ def download(url, token, session, filename, savepath=None, chunksize=4024,
 
         for chunk in iter_content:
             handle.write(chunk)
-            if bar:
+            if bar is not None:
                 bar.update(len(chunk))
 
     if bar:
