@@ -175,7 +175,7 @@ def sanitize_filename(filename):
     return filename.replace('/', '_')
 
 
-def download_media(plex, sync_title, media, part, opts, downloaded_callback):
+def download_media(plex, sync_title, media, part, opts, downloaded_callback, max_allowed_size_diff_percent=0):
     log.debug('Checking media#%d %s', media.ratingKey, media.title)
     filename = sanitize_filename(pretty_filename(media, part))
     filename_tmp = filename + '.part'
@@ -220,7 +220,7 @@ def download_media(plex, sync_title, media, part, opts, downloaded_callback):
                 os.unlink(path_tmp)
             raise
 
-    if not os.path.isfile(path_tmp) or os.path.getsize(path_tmp) != part.size:
+    if not os.path.isfile(path_tmp) or abs(1 - os.path.getsize(path_tmp) / part.size) > max_allowed_size_diff_percent:
         log.error('File "%s" has an unexpected size (actual: %d, expected: %d)', path_tmp,
                   os.path.getsize(path_tmp), part.size)
         raise ValueError('Downloaded file size is not the same as expected')

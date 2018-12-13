@@ -6,7 +6,7 @@ import argparse
 from plexiglas import log, db
 from six.moves.urllib.parse import urlparse, parse_qsl, urlencode
 from hashlib import md5
-from plexapi import video
+from plexapi import video, audio
 
 
 class SimpleSync(PlexiglasPlugin):
@@ -115,7 +115,11 @@ class SimpleSync(PlexiglasPlugin):
                     section = item.section()
 
                 part = cls.get_download_part(item)
-                download_media(plex, section.title, item, part, opts, mark_downloaded)
+                max_allowed_size_diff_percent = 0
+                if isinstance(item, audio.Track):
+                    # Plex removes some tags from audio file, so the size may be a little lower, than expected
+                    max_allowed_size_diff_percent = 1
+                download_media(plex, section.title, item, part, opts, mark_downloaded, max_allowed_size_diff_percent)
 
         return required_media
 
