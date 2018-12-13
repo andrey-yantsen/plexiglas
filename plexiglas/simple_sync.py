@@ -94,6 +94,14 @@ class SimpleSync(PlexiglasPlugin):
                     section = root
                 elif isinstance(root, video.Season):
                     section = root.show()
+            elif len(items_list) == 1 and type(items_list[0]) in (audio.Artist, audio.Album):
+                root = items_list[0]
+                items_list = root.tracks()
+
+                if isinstance(root, audio.Artist):
+                    section = root
+                elif isinstance(root, audio.Album):
+                    section = root.show()
 
             downloaded_count = 0
             for item in items_list:
