@@ -26,7 +26,7 @@ requirements = []
 dependency_links = []
 with open('requirements.txt') as handle:
     for line in handle.readlines():
-        if not line.startswith('#'):
+        if not line.startswith('#') and not line.startswith('-i '):
             if '://' in line:
                 link = line.strip()
                 dependency_links.append(link)
