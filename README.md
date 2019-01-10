@@ -98,3 +98,15 @@ Following arguments are currently supported:
 
 If you wouldn't provide a username and/or password the app will ask you to provide them in interactive mode, afterwards
 it will be stored in secure storage, unless option `-i` was set.
+
+If you're using Mobile Sync you can split all your files by subdirectories in quite an easy way:
+when you create a new Sync Item in Plex interface it asks you for a `title` — it would be a folder
+name for all the items, related to this item. And there lies a trick, there is some special handling
+for this title:
+
+* You can set it to something like `Movies#Best` — in this case the part after `#` will be ignored 
+  and all the files would be placed within `Movies` folder, while you'll be able to differentiate
+  Sync Items in the interface
+* You can use `/` or `\\` to split the files by folders, e.g. you can add a new Item
+  `TV Shows/The Big Gang Theory` and all the episodes will be stored inside directory
+  `TV Shows/The Big Gang Theory` of your downloading path.   
