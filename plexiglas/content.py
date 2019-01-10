@@ -171,8 +171,22 @@ def download(url, token, session, filename, savepath=None, chunksize=4024,
     return fullpath
 
 
-def sanitize_filename(filename):
-    return filename.replace('/', '_')
+def sanitize_filename(filename, allow_dir_separator=False):
+    if allow_dir_separator:
+        filename = os.path.normpath(filename)
+    else:
+        filename = filename.replace('/', '_').replace('\\', '_')
+
+    for c in ['?', ';', ':', '+', '<', '>', '|', '*', '"']:
+        filename = filename.replace(c, '_')
+    for c in range(0, 31):
+        filename = filename.replace(chr(c), '_')
+    old_file_name = filename
+    filename.replace('__', '_')
+    while old_file_name != filename:
+        old_file_name = filename
+        filename.replace('__', '_')
+    return filename
 
 
 def download_media(plex, sync_title, media, part, opts, downloaded_callback, max_allowed_size_diff_percent=0):
@@ -184,7 +198,7 @@ def download_media(plex, sync_title, media, part, opts, downloaded_callback, max
         sync_title, _ = sync_title.split('#', 1)
         sync_title = sync_title.strip()
 
-    savepath = os.path.join(opts.destination, sanitize_filename(sync_title))
+    savepath = os.path.join(opts.destination, sanitize_filename(sync_title, True))
 
     if os.sep.join(os.path.join(savepath, filename).split(os.sep)[-2:]) in opts.skip:
         log.info('Skipping file %s from %s due to cli arguments', filename, savepath)
