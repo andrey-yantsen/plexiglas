@@ -1,11 +1,12 @@
 import os
 import argparse
 import logging
+import platform
 import sys
 from time import sleep
 import humanfriendly as hf
 
-from . import log, keyring, set_keyring
+from . import log, keyring, set_keyring, __version__
 from .plugin import get_all_plugins
 
 
@@ -198,6 +199,8 @@ def main():
     opts = parse_arguments()
     process_opts(opts)
 
+    log.info('Starting %s version %s on %s %s...', __package__, __version__, platform.system(), platform.release())
+
     if db.get_param('subdir', '0') != str(int(opts.subdir)):
         if db.get_downloaded_size('movie') > 0:
             if confirm('You`ve changed `subdir` parameter, are you really sure?'):
@@ -235,17 +238,21 @@ def main():
                 log.info('Currently used (according to DB): %s', disk_used_hf)
 
             try:
-                plex = get_plex_client(opts)
-                for plugin in get_all_plugins():
-                    if hasattr(plugin, 'sync'):
-                        log.debug('Running sync on %s', plugin.name)
-                        required_media = plugin.sync(plex, opts)
-                        cleanup(plex, plugin.name, required_media, opts)
-            except exceptions.RequestException:
-                if stop:
-                    raise
-                else:
-                    log.exception('Got exception from RequestException family, it shouldn`t be anything serious')
+                try:
+                    plex = get_plex_client(opts)
+                    for plugin in get_all_plugins():
+                        if hasattr(plugin, 'sync'):
+                            log.debug('Running sync on %s', plugin.name)
+                            required_media = plugin.sync(plex, opts)
+                            cleanup(plex, plugin.name, required_media, opts)
+                except exceptions.RequestException:
+                    if stop:
+                        raise
+                    else:
+                        log.exception('Got exception from RequestException family, it shouldn`t be anything serious')
+            except BaseException:
+                log.exception('Unexpected error')
+                raise
 
         if not stop:
             log.debug('Going to sleep for %d seconds', opts.delay)
