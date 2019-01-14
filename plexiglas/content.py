@@ -13,7 +13,7 @@ def cleanup(plex, sync_type, required_media, opts):
             sync_title, _ = sync_title.split('#', 1)
             sync_title = sync_title.strip()
 
-        sync_title = sanitize_filename(sync_title)
+        sync_title = sanitize_filename(sync_title, True)
         media_filename = sanitize_filename(row['media_filename'])
 
         if row['media_type'] == 'movie' and opts.subdir:
