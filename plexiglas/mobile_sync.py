@@ -29,8 +29,8 @@ class MobileSync(PlexiglasPlugin):
         all_downloaded_items = db.get_all_downloaded(cls.name)
         downloaded_count = defaultdict(lambda: defaultdict(int))
 
-        for (machine_id, sync_id), items in groupby(all_downloaded_items, key=itemgetter(1, 2)):
-            downloaded_count[machine_id][sync_id] = len(list(items))
+        for (machine_id, sync_id), items in groupby(all_downloaded_items, key=itemgetter('machine_id', 'sync_id')):
+            downloaded_count[str(machine_id)][str(sync_id)] = len(list(items))
 
         skipped_syncs = []
 
@@ -38,7 +38,7 @@ class MobileSync(PlexiglasPlugin):
             log.debug('Checking sync item#%d %s', item.id, item.title)
 
             if item.status.itemsReadyCount == 0 \
-                    and item.status.itemsDownloadedCount == downloaded_count[item.machineIdentifier][item.id]:
+                    and item.status.itemsDownloadedCount == downloaded_count[str(item.machineIdentifier)][str(item.id)]:
                 skipped_syncs.append((item.machineIdentifier, item.id))
                 log.debug('No changes for the item#%d %s', item.id, item.status)
                 continue
