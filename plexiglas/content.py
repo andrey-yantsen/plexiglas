@@ -1,5 +1,6 @@
 from humanfriendly import format_size
 from plexapi.exceptions import BadRequest
+import platform
 
 from . import db, log
 import os
@@ -71,13 +72,34 @@ def pretty_filename(media, part):
 
 
 def get_total_disk_space(path):
-    fs_stat = os.statvfs(path)
-    return fs_stat.f_blocks * fs_stat.f_frsize
+    if platform.system() == 'Windows':
+        import ctypes
+        total_bytes = ctypes.c_ulonglong(0)
+        ok = ctypes.windll.kernel32.GetDiskFreeSpaceExW(ctypes.c_wchar_p(path), None, ctypes.pointer(total_bytes), None)
+        if ok:
+            total_space = total_bytes.value
+        else:
+            total_space = 0
+    else:
+        fs_stat = os.statvfs(path)
+        total_space = fs_stat.f_blocks * fs_stat.f_frsize
+
+    return total_space
 
 
 def get_available_disk_space(path):
-    fs_stat = os.statvfs(path)
-    return fs_stat.f_bfree * fs_stat.f_frsize
+    if platform.system() == 'Windows':
+        import ctypes
+        free_bytes = ctypes.c_ulonglong(0)
+        ok = ctypes.windll.kernel32.GetDiskFreeSpaceExW(ctypes.c_wchar_p(path), None, None, ctypes.pointer(free_bytes))
+        if ok:
+            free_space = free_bytes.value
+        else:
+            free_space = 0
+    else:
+        fs_stat = os.statvfs(path)
+        free_space = fs_stat.f_bfree * fs_stat.f_frsize
+    return free_space
 
 
 def makedirs(name, mode=0o777, exist_ok=False):
