@@ -9,7 +9,7 @@ scp $(dirname $0)/python-minimal.zip root@mypassport.local:/DataVolume/python/py
 ssh root@mypassport.local << END
 cd /DataVolume/python/ && unzip -o python.zip && rm python.zip
 curl https://bootstrap.pypa.io/get-pip.py --insecure | PYTHONHOME=/DataVolume/python/ /DataVolume/python/bin/python
-LC_ALL=en_US.UTF-8 PYTHONHOME=/DataVolume/python/ /DataVolume/python/bin/pip install -U --process-dependency-links plexiglas
+LC_ALL=en_US.UTF-8 PYTHONHOME=/DataVolume/python/ /DataVolume/python/bin/pip install -U plexiglas
 END
 
 ssh -t root@mypassport.local "LC_ALL=en_US.UTF-8 PYTHONHOME=/DataVolume/python/ /DataVolume/python/bin/plexiglas -d /DataVolume/PlexSync -i -n 'MyPassport Wireless Pro' -q"
