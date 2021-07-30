@@ -9,6 +9,7 @@ scp $(dirname $0)/python-minimal.zip root@mypassport.local:/DataVolume/python/py
 ssh root@mypassport.local << END
 cd /DataVolume/python/ && unzip -o python.zip && rm python.zip
 curl https://bootstrap.pypa.io/pip/2.7/get-pip.py --insecure | PYTHONHOME=/DataVolume/python/ /DataVolume/python/bin/python
+LC_ALL=en_US.UTF-8 PYTHONHOME=/DataVolume/python/ /DataVolume/python/bin/pip install plexapi==3.1.0
 LC_ALL=en_US.UTF-8 PYTHONHOME=/DataVolume/python/ /DataVolume/python/bin/pip install -U plexiglas
 END
 
