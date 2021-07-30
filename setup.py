@@ -32,8 +32,7 @@ with open('requirements.txt') as handle:
                 dependency_links.append(link)
                 requirements.append(re.findall("#egg=(.*?)-[\d.]+", line)[0])
             else:
-                package = line.strip().split('=', 1)[0]
-                requirements.append(package)
+                requirements.append(line.strip())
 
 setup(
     name='plexiglas',
